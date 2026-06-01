@@ -1,0 +1,30 @@
+{
+  "run": {
+    "seed": 42,
+    "environment": "colab",
+    "dataset": "HAM10000 / ISIC 2018 Task 3",
+    "total_images": 11720,
+    "split": {"train": 7030, "val": 2342, "test": 2348}
+  },
+  "models": {
+    "resnet50":        {"val_bacc": 0.8117, "test_bacc": 0.8135, "best_epoch": 33, "total_epochs": 35},
+    "densenet121":     {"val_bacc": 0.8055, "test_bacc": 0.8017, "best_epoch": 35, "total_epochs": 35},
+    "efficientnet_b3": {"val_bacc": 0.7907, "test_bacc": 0.8007, "best_epoch": 6,  "total_epochs": 16}
+  },
+  "ensemble":     {"test_bacc": 0.8315},
+  "tta_ensemble": {"rounds": 10, "test_bacc": 0.8486},
+  "clinical": {
+    "thresholds":     {"MEL": 0.3367, "AKIEC": 0.3911},
+    "test_bacc":      0.8546,
+    "bacc_malignant": 0.8015,
+    "per_class": {
+      "MEL":   {"sensitivity": 0.8123, "specificity": 0.9439},
+      "NV":    {"sensitivity": 0.9160, "specificity": 0.9262},
+      "BCC":   {"sensitivity": 0.9040, "specificity": 0.9874},
+      "AKIEC": {"sensitivity": 0.6883, "specificity": 0.9925},
+      "BKL":   {"sensitivity": 0.8178, "specificity": 0.9817},
+      "DF":    {"sensitivity": 0.8438, "specificity": 0.9978},
+      "VASC":  {"sensitivity": 1.0000, "specificity": 0.9978}
+    }
+  }
+}

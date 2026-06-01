@@ -1,0 +1,144 @@
+# =============================================================================
+# Skin Lesion Classifier — Configuration
+# All hyperparameters and paths in one place.
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Paths — override for your environment
+# ---------------------------------------------------------------------------
+paths:
+  source_dir:  "/content/drive/MyDrive/ISIC2018_Task3/ISIC2018"
+  csv_dir:     "/content/drive/MyDrive/ISIC2018_Task3/Groundtruth"
+  prep_dir:    "/content/data/isic2018_task3_prepared"
+  outputs:     "/content/drive/MyDrive/ISIC2018_Task3/OUTPUTS"
+
+# ---------------------------------------------------------------------------
+# Dataset
+# ---------------------------------------------------------------------------
+dataset:
+  classes:      [MEL, NV, BCC, AKIEC, BKL, DF, VASC]
+  train_ratio:  0.6
+  val_ratio:    0.2
+  test_ratio:   0.2
+  use_percent:  1.0
+  min_samples:  10          # minimum images per class to include it
+
+# ---------------------------------------------------------------------------
+# Augmentation
+# ---------------------------------------------------------------------------
+augmentation:
+  # Ratio thresholds that determine augmentation level per class:
+  #   ratio < light   → level 0 (no augmentation)
+  #   light ≤ ratio < medium → level 1 (flips + light rotation)
+  #   medium ≤ ratio < heavy → level 2 (+ affine)
+  #   ratio ≥ heavy   → level 3 (+ noise, blur)
+  thresholds:
+    light:  2.0
+    medium: 6.0
+    heavy:  15.0
+  # Force specific classes to at least this augmentation level
+  clinical_boost:
+    MEL: 2
+
+# ---------------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------------
+models:
+  architectures: [resnet50, densenet121, efficientnet_b3]
+
+  img_size:
+    resnet50:        224
+    densenet121:     224
+    efficientnet_b3: 300
+
+  batch_size:
+    resnet50:        32
+    densenet121:     32
+    efficientnet_b3: 8
+
+  lr:
+    resnet50:        0.0001
+    densenet121:     0.00005
+    efficientnet_b3: 0.00005
+
+  weight_decay:
+    resnet50:        0.0001
+    densenet121:     0.00005
+    efficientnet_b3: 0.00005
+
+# ---------------------------------------------------------------------------
+# Loss
+# ---------------------------------------------------------------------------
+loss:
+  # Focal Loss gamma per model. gamma=0 reduces to standard CrossEntropy.
+  focal_gamma:
+    resnet50:        1.0
+    densenet121:     1.0
+    efficientnet_b3: 0.0
+  label_smoothing: 0.1      # applied in training only, not validation
+
+# ---------------------------------------------------------------------------
+# Training
+# ---------------------------------------------------------------------------
+training:
+  seed:       42
+  max_epochs: 35
+  num_workers: 0            # 0 for Colab, 2 for Kaggle/local
+
+# ---------------------------------------------------------------------------
+# Early Stopping
+# ---------------------------------------------------------------------------
+early_stopping:
+  # Epochs without improvement before stopping
+  patience:
+    resnet50:        10
+    densenet121:     10
+    efficientnet_b3: 10
+
+  # Minimum score improvement to count as progress
+  min_delta:
+    resnet50:        0.001
+    densenet121:     0.0005
+    efficientnet_b3: 0.001
+
+  # Weight of BACC in the mixed score: score = w*BACC + (1-w)/(1+loss)
+  # Higher weight for EfficientNet because its val loss was more noisy.
+  bacc_weight:
+    resnet50:        0.85
+    densenet121:     0.85
+    efficientnet_b3: 0.92
+
+# ---------------------------------------------------------------------------
+# LR Scheduler (ReduceLROnPlateau)
+# ---------------------------------------------------------------------------
+scheduler:
+  factor: 0.5
+  patience:
+    resnet50:        4
+    densenet121:     5
+    efficientnet_b3: 4
+
+# ---------------------------------------------------------------------------
+# Inference
+# ---------------------------------------------------------------------------
+inference:
+  tta_rounds: 10
+
+# ---------------------------------------------------------------------------
+# Clinical Threshold Calibration
+# ---------------------------------------------------------------------------
+clinical:
+  priority_order: [MEL, AKIEC]
+
+  thresholds:
+    MEL:
+      sensitivity_target: 0.85
+      specificity_floor:  0.85
+      use_fbeta:          false
+      beta:               1.0
+
+    AKIEC:
+      sensitivity_target: 0.75
+      specificity_floor:  0.70
+      use_fbeta:          false
+      beta:               1.0

@@ -1,0 +1,24 @@
+{
+  "run": {"seed": 123, "environment": "kaggle", "total_images": 11720},
+  "models": {
+    "resnet50":        {"val_bacc": 0.8056, "test_bacc": 0.7721, "best_epoch": 32},
+    "densenet121":     {"val_bacc": 0.8451, "test_bacc": 0.7936, "best_epoch": 35},
+    "efficientnet_b3": {"val_bacc": 0.8369, "test_bacc": 0.8142, "best_epoch": 24}
+  },
+  "ensemble":     {"test_bacc": 0.8368},
+  "tta_ensemble": {"rounds": 10, "test_bacc": 0.8545},
+  "clinical": {
+    "thresholds":     {"MEL": 0.213, "AKIEC": 0.540},
+    "test_bacc":      0.8463,
+    "bacc_malignant": 0.8049,
+    "per_class": {
+      "MEL":   {"sensitivity": 0.8774, "specificity": 0.8970},
+      "NV":    {"sensitivity": 0.8786, "specificity": 0.9288},
+      "BCC":   {"sensitivity": 0.8880, "specificity": 0.9928},
+      "AKIEC": {"sensitivity": 0.6494, "specificity": 0.9912},
+      "BKL":   {"sensitivity": 0.7175, "specificity": 0.9885},
+      "DF":    {"sensitivity": 0.9688, "specificity": 0.9974},
+      "VASC":  {"sensitivity": 0.9444, "specificity": 0.9991}
+    }
+  }
+}

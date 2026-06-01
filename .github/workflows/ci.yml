@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install CPU-only PyTorch
+        run: |
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install dependencies
+        run: |
+          pip install albumentations scikit-learn pandas matplotlib seaborn PyYAML pytest
+
+      - name: Run tests
+        working-directory: ${{ github.workspace }}
+        run: |
+          python -m pytest tests/ -v --tb=short
+        env:
+          PYTHONPATH: ${{ github.workspace }}/src

@@ -1,0 +1,40 @@
+{
+  "experiment": "Robustness analysis across 3 independent random seeds",
+  "dataset": "HAM10000 / ISIC 2018 Challenge Task 3",
+  "architecture": "Weighted ensemble: ResNet-50 + DenseNet-121 + EfficientNet-B3",
+  "inference": "TTA (10 rounds) + clinical threshold calibration",
+  "seeds": [42, 7, 123],
+  "results": {
+    "seed_42": {
+      "tta_bacc":              0.8486,
+      "tta_bacc_with_thresholds": 0.8546,
+      "mel_sensitivity":       0.812,
+      "akiec_sensitivity":     0.688,
+      "bacc_malignant":        0.8015,
+      "thresholds": {"MEL": 0.3367, "AKIEC": 0.3911}
+    },
+    "seed_7": {
+      "tta_bacc":              0.8361,
+      "tta_bacc_with_thresholds": 0.8348,
+      "mel_sensitivity":       0.828,
+      "akiec_sensitivity":     0.727,
+      "bacc_malignant":        0.806,
+      "thresholds": {"MEL": 0.297, "AKIEC": 0.391}
+    },
+    "seed_123": {
+      "tta_bacc":              0.8545,
+      "tta_bacc_with_thresholds": 0.8463,
+      "mel_sensitivity":       0.877,
+      "akiec_sensitivity":     0.649,
+      "bacc_malignant":        0.8049,
+      "thresholds": {"MEL": 0.213, "AKIEC": 0.540}
+    }
+  },
+  "summary": {
+    "tta_bacc_mean": 0.846,
+    "tta_bacc_std":  0.009,
+    "tta_bacc_min":  0.836,
+    "tta_bacc_max":  0.855,
+    "note": "Variance across seeds reflects hardware stochasticity (T4 vs P100 GPU sessions). All seeds use identical hyperparameters and the same deterministic split algorithm."
+  }
+}

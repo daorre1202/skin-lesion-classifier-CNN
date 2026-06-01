@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Environments
+.env
+.venv
+env/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data — never commit dataset images or large files
+data/
+ISIC2018/
+*.jpg
+*.jpeg
+*.png
+*.npy
+*.pth
+*.pkl
+
+# Outputs — generated during training
+outputs/
+*.zip
+*.pdf
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.txt
+ejecucion_log.txt
+
+# Keep results JSONs (small, informative)
+!results/**/*.json
+
+# Keep docs images
+!docs/*.png
+!docs/*.jpg
+!docs/*.svg
