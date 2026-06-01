@@ -322,11 +322,14 @@ LOAD_TTA_FROM_DIR       = False          # True to recalibrate thresholds only
 
 ### Kaggle
 
-**1.** Add the dataset to your notebook from [this Kaggle dataset](https://www.kaggle.com/datasets/danielortizrequena/isic2018-task3) or upload your own copy.
+**1.** Add the dataset to your notebook — two options:
 
-**2.** Open `notebooks/02_training_pipeline.ipynb` in Kaggle. Set the dataset slug:
+- **Use the existing dataset** (recommended): click `+ Add data` in your Kaggle notebook and search for `danielortizrequena/isic2018-task3`. No download or upload needed — the pipeline reads it directly from `/kaggle/input/` with no configuration changes.
+- **Upload your own copy**: upload the dataset to your Kaggle account and set `KAGGLE_DATASET_SLUG = 'your-username/your-dataset-name'` in the notebook.
+
+**2.** Open `notebooks/02_training_pipeline.ipynb` in Kaggle. The default slug already points to the existing dataset — no changes needed if you used option A above:
 ```python
-KAGGLE_DATASET_SLUG = 'danielortizrequena/isic2018-task3'
+KAGGLE_DATASET_SLUG = 'danielortizrequena/isic2018-task3'  # default, change only if using your own copy
 ```
 
 **3.** The pipeline auto-detects Kaggle via environment variables and reads images from `/kaggle/input/`. Outputs are saved to `/kaggle/working/OUTPUTS/`.
