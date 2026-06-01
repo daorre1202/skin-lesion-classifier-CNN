@@ -8,7 +8,7 @@ setup(
     description="CNN ensemble for automated skin lesion classification (ISIC 2018 Task 3)",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
-    url="https://github.com/danielortizrequena/skin-lesion-classifier",
+    url="https://github.com/daorre1202/skin-lesion-classifier-CNN",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     python_requires=">=3.10",

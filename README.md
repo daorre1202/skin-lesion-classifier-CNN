@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 ![Dataset](https://img.shields.io/badge/Dataset-ISIC%202018%20Task%203-blue?style=flat)
 ![BACC](https://img.shields.io/badge/BACC-0.846_±_0.009-brightgreen?style=flat)
-![CI](https://github.com/daorre1202/skin-lesion-classifier/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/daorre1202/skin-lesion-classifier-CNN/actions/workflows/ci.yml/badge.svg)
 
 **Automated dermoscopy image classification for 7 skin lesion types**  
 *Weighted CNN Ensemble · Test-Time Augmentation · Clinical Threshold Calibration · Grad-CAM*
@@ -24,8 +24,8 @@
 
 ```bash
 # Clone and set up
-git clone https://github.com/daorre1202/skin-lesion-classifier.git
-cd skin-lesion-classifier
+git clone https://github.com/daorre1202/skin-lesion-classifier-CNN.git
+cd skin-lesion-classifier-CNN
 
 # With pip
 pip install -r requirements.txt && pip install -e .
@@ -168,8 +168,8 @@ Split: 60% train / 20% val / 20% test, stratified by class.
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/daorre1202/skin-lesion-classifier.git
-cd skin-lesion-classifier
+git clone https://github.com/daorre1202/skin-lesion-classifier-CNN.git
+cd skin-lesion-classifier-CNN
 pip install -r requirements.txt
 ```
 
@@ -383,7 +383,7 @@ Calibrated thresholds: `θ_MEL = 0.337`, `θ_AKIEC = 0.391`
 ## Project structure
 
 ```
-skin-lesion-classifier/
+skin-lesion-classifier-CNN/
 ├── README.md
 ├── LICENSE
 ├── CodigoTFG_DanielOrtiz.py    ← standalone Colab/Kaggle script
@@ -525,7 +525,7 @@ If you use this code or find it useful, please cite:
 ```bibtex
 @misc{ortiz2026skinlesion,
   author       = {Ortiz Requena, Daniel},
-  url          = {https://github.com/daorre1202/skin-lesion-classifier},
+  url          = {https://github.com/daorre1202/skin-lesion-classifier-CNN},
   title        = {Skin Lesion Classification with CNN Ensemble},
   year         = {2026},
   institution  = {Universidad de Málaga},
@@ -535,7 +535,7 @@ If you use this code or find it useful, please cite:
 
 For plain-text citation (e.g. APA):
 
-> Ortiz Requena, D. (2026). *Skin Lesion Classification with CNN Ensemble* [Undergraduate thesis]. Universidad de Málaga, Ingeniería de la Salud. https://github.com/daorre1202/skin-lesion-classifier
+> Ortiz Requena, D. (2026). *Skin Lesion Classification with CNN Ensemble* [Undergraduate thesis]. Universidad de Málaga, Ingeniería de la Salud. https://github.com/daorre1202/skin-lesion-classifier-CNN
 
 ---
 
