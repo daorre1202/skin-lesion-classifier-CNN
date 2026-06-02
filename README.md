@@ -8,6 +8,7 @@
 ![Dataset](https://img.shields.io/badge/Dataset-ISIC%202018%20Task%203-blue?style=flat)
 ![BACC](https://img.shields.io/badge/BACC-0.846_±_0.009-brightgreen?style=flat)
 ![CI](https://github.com/daorre1202/skin-lesion-classifier-CNN/actions/workflows/ci.yml/badge.svg)
+![Release](https://img.shields.io/github/v/release/daorre1202/skin-lesion-classifier-CNN?style=flat)
 
 **Automated dermoscopy image classification for 7 skin lesion types**  
 *Weighted CNN Ensemble · Test-Time Augmentation · Clinical Threshold Calibration · Grad-CAM · ISIC 2018 Task 3*
