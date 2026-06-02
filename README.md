@@ -1,4 +1,4 @@
-# Skin Lesion Classification with CNN Ensemble
+# Skin Lesion Classification with CNN Ensemble — Clinical Threshold Calibration · BACC 0.846 ± 0.009
 
 <div align="center">
 
@@ -10,7 +10,7 @@
 ![CI](https://github.com/daorre1202/skin-lesion-classifier-CNN/actions/workflows/ci.yml/badge.svg)
 
 **Automated dermoscopy image classification for 7 skin lesion types**  
-*Weighted CNN Ensemble · Test-Time Augmentation · Clinical Threshold Calibration · Grad-CAM*
+*Weighted CNN Ensemble · Test-Time Augmentation · Clinical Threshold Calibration · Grad-CAM · ISIC 2018 Task 3*
 
 </div>
 
@@ -43,6 +43,7 @@ make train
 make visualize DIR=outputs/<timestamp>
 ```
 
+---
 
 ## Overview
 
