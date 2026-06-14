@@ -8,6 +8,7 @@
 ![Dataset](https://img.shields.io/badge/Dataset-ISIC%202018%20Task%203-blue?style=flat)
 ![BACC](https://img.shields.io/badge/BACC-0.846_±_0.009-brightgreen?style=flat)
 ![CI](https://github.com/daorre1202/skin-lesion-classifier-CNN/actions/workflows/ci.yml/badge.svg)
+[![Kaggle](https://img.shields.io/badge/Kaggle-Results_Notebook-20BEFF?style=flat&logo=kaggle&logoColor=white)](https://www.kaggle.com/code/danielortizrequena/cnn-ensemble-tta-clinical-thresholds-isic2018)
 ![Release](https://img.shields.io/github/v/release/daorre1202/skin-lesion-classifier-CNN?style=flat)
 
 **Automated dermoscopy image classification for 7 skin lesion types**  
@@ -363,6 +364,8 @@ KAGGLE_DATASET_SLUG = 'danielortizrequena/isic2018-task3'  # default, change onl
 ---
 
 ## Results
+
+> **Interactive results notebook:** All metrics in this section can be explored interactively on [![Kaggle](https://kaggle.com/static/images/open-in-kaggle.svg)](https://www.kaggle.com/code/danielortizrequena/cnn-ensemble-tta-clinical-thresholds-isic2018)
 
 > The figures below are generated from the seed 42 reference run (Google Colab, T4 GPU).
 > Every run produces a complete PDF report (`resultados_tfg.pdf`) saved automatically to the
