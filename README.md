@@ -1,4 +1,4 @@
-# Skin Lesion Classification with CNN Ensemble — Clinical Threshold Calibration · BACC 0.846 ± 0.009
+# Skin Lesion Classification with CNN Ensemble · Clinical Threshold Calibration · BACC 0.846 ± 0.009
 
 <div align="center">
 
@@ -18,7 +18,15 @@
 
 ---
 
-> **Clinical motivation:** Melanoma is the deadliest form of skin cancer, yet its 5-year survival rate exceeds 98% when detected at an early stage. Dermoscopy-based deep learning classifiers can assist dermatologists in screening, but standard accuracy metrics are insufficient for clinical use — a system that correctly classifies 95% of images while missing 30% of melanomas is clinically dangerous. This project addresses that gap by combining a weighted CNN ensemble with per-class probability threshold calibration that explicitly targets **sensitivity ≥ 0.85 for melanoma** and **≥ 0.75 for actinic keratoses**, accepting a minimal reduction in global balanced accuracy in exchange for clinically meaningful malignant-class detection.
+> **Versions.** Tag `v1.0` is the exact state cited in the Bachelor's thesis deposited in
+> RIUMA (University of Málaga) and is preserved unchanged for verifiability. Tag `v1.0.1`
+> contains documentation corrections to this README only; the pipeline, the results and the
+> reported figures are identical. Development continues beyond that point; to reproduce the
+> results reported in a given publication, use the tag indicated there.
+
+---
+
+> **Clinical motivation:** Melanoma is the deadliest form of skin cancer, yet its 5-year survival rate exceeds 99% when detected at an early stage. Dermoscopy-based deep learning classifiers can assist dermatologists in screening, but standard accuracy metrics are insufficient for clinical use: a system that correctly classifies 95% of images while missing 30% of melanomas is clinically dangerous. This project addresses that gap by combining a weighted CNN ensemble with per-class probability threshold calibration that explicitly targets **sensitivity ≥ 0.85 for melanoma** and **≥ 0.75 for actinic keratoses**, accepting a minimal reduction in global balanced accuracy in exchange for clinically meaningful malignant-class detection.
 
 ---
 
@@ -38,7 +46,7 @@ conda env create -f environment.yml && conda activate skin-classifier
 # Run all tests
 make test
 
-# Train locally (seed 42) — for Colab/Kaggle use notebooks/02_training_pipeline.ipynb
+# Train locally (seed 42). For Colab/Kaggle use notebooks/02_training_pipeline.ipynb
 make train
 
 # Visualise ensemble output on a trained checkpoint
@@ -49,13 +57,13 @@ make visualize DIR=outputs/<timestamp>
 
 ## Overview
 
-This project implements an end-to-end deep learning pipeline for the automated classification of dermoscopic skin lesion images, addressing the **ISIC 2018 Challenge Task 3** (HAM10000 dataset, 11,720 images across all splits, 7 classes). The system is designed with clinical deployment constraints in mind: beyond optimising global accuracy, it incorporates class-specific probability threshold calibration to meet clinically meaningful sensitivity targets for malignant lesions — a distinction that separates clinically useful systems from academically accurate ones.
+This project implements an end-to-end deep learning pipeline for the automated classification of dermoscopic skin lesion images, addressing the **ISIC 2018 Challenge Task 3** (HAM10000 dataset, 11,720 images across all splits, 7 classes). The system is designed with clinical deployment constraints in mind: beyond optimising global accuracy, it incorporates class-specific probability threshold calibration to meet clinically meaningful sensitivity targets for malignant lesions. This is the distinction that separates clinically useful systems from academically accurate ones.
 
-The pipeline combines three pretrained CNN architectures into a **weighted ensemble**, applies **Test-Time Augmentation (TTA)** at inference, and uses **Grad-CAM** visualisations to provide interpretability for clinical validation. A robustness analysis across three independent random seeds (42, 7, 123) on two cloud GPU platforms (Google Colab T4, Kaggle P100) confirms stable generalisation with a standard deviation of ±0.009 BACC — comparable to variance reported in published ensemble methods on this benchmark.
+The pipeline combines three pretrained CNN architectures into a **weighted ensemble**, applies **Test-Time Augmentation (TTA)** at inference, and uses **Grad-CAM** visualisations to provide interpretability for clinical validation. A robustness analysis across three independent random seeds (42, 7, 123) on two cloud GPU platforms (Google Colab T4, Kaggle P100) confirms stable generalisation with a standard deviation of ±0.009 BACC, comparable to variance reported in published ensemble methods on this benchmark.
 
 ### Key results
 
-The pipeline is designed as a progressive stack — each component adds measurable value over the previous:
+The pipeline is designed as a progressive stack, where each component adds measurable value over the previous:
 
 | Strategy | Test BACC | Malignant BACC |
 |---|---|---|
@@ -64,15 +72,15 @@ The pipeline is designed as a progressive stack — each component adds measurab
 | + Test-Time Augmentation (10 rounds) | 0.8486 | 0.7748 ¹ |
 | + Clinical threshold calibration | **0.8546** | **0.8015 (+0.027)** |
 
-> The clinical threshold step is the key differentiator: it trades a small reduction in global accuracy for a consistent +0.027 improvement in malignant-class detection — the classes where a missed diagnosis carries the greatest clinical risk.
+> The clinical threshold step is the key differentiator: it trades a small reduction in global accuracy for a consistent +0.027 improvement in malignant-class detection, which covers the classes where a missed diagnosis carries the greatest clinical risk.
 
 ### Full results (seed 42 reference run)
 
 | Metric | Value |
 |---|---|
 | TTA Ensemble BACC (mean ± std, 3 seeds) | **0.846 ± 0.009** |
-| Seed 42 — TTA Ensemble without clinical thresholds | 0.8486 |
-| Seed 42 — TTA Ensemble + clinical thresholds | **0.8546** |
+| Seed 42 · TTA Ensemble without clinical thresholds | 0.8486 |
+| Seed 42 · TTA Ensemble + clinical thresholds | **0.8546** |
 | Malignant-class BACC without thresholds (seed 42) | 0.7748 ¹ |
 | Malignant-class BACC with clinical thresholds (seed 42) | **0.8015 (+0.027)** |
 | Malignant-class BACC with thresholds (all 3 seeds) | **0.801 – 0.806** |
@@ -88,9 +96,9 @@ The pipeline is designed as a progressive stack — each component adds measurab
 | 7   | 0.8361 | 0.8348 | **0.8060** | 0.828 | 0.727 |
 | 123 | **0.8545** | 0.8463 | **0.8049** | **0.877** | 0.649 |
 
-All three seeds achieve malignant-class BACC > 0.80 with clinical threshold calibration — confirming that the improvement in malignant lesion detection is consistent and not specific to a single run.
+All three seeds achieve malignant-class BACC > 0.80 with clinical threshold calibration, confirming that the improvement in malignant lesion detection is consistent and not specific to a single run.
 
-The repository contains both a standalone script (`CodigoTFG_DanielOrtiz.py`) optimised for cloud execution on Colab and Kaggle, and a modular Python package (`src/skin_classifier/`) following software engineering best practices. Both implement the same pipeline — the standalone script for reproducible training, the package for extensibility and unit testing.
+The repository contains both a standalone script (`CodigoTFG_DanielOrtiz.py`) optimised for cloud execution on Colab and Kaggle, and a modular Python package (`src/skin_classifier/`) following software engineering best practices. Both implement the same pipeline: the standalone script for reproducible training, the package for extensibility and unit testing.
 
 ---
 
@@ -107,7 +115,7 @@ Standard argmax at 0.5 probability yields suboptimal sensitivity for malignant c
 - **MEL**: `argmax-θ` with `sensitivity ≥ 0.85` and `specificity ≥ 0.85`
 - **AKIEC**: `argmax-θ` with `sensitivity ≥ 0.75` and `specificity ≥ 0.70`
 
-This strategy improves malignant-class BACC (MEL+BCC+AKIEC) from 0.7748 to 0.8015 (+0.027) on the seed 42 reference run — prioritising the detection of malignant lesions where missed diagnoses carry the greatest clinical risk.
+This strategy improves malignant-class BACC (MEL+BCC+AKIEC) from 0.7748 to 0.8015 (+0.027) on the seed 42 reference run, prioritising the detection of malignant lesions where missed diagnoses carry the greatest clinical risk.
 
 
 ---
@@ -120,7 +128,7 @@ Each architectural choice was made deliberately and is documented here for repro
 |---|---|---|
 | Ensemble weighting | Proportional to val BACC | Test set remains unseen during all design decisions |
 | Early stopping score | `w·BACC + (1-w)/(1+loss)` | Mixed score reduces noise from oscillating val metrics in imbalanced datasets |
-| Label smoothing | Training only, not validation | Smoothing inflates val loss, causing premature LR reduction |
+| Label smoothing | Applied during training; disabled at validation | Smoothing inflates val loss, causing premature LR reduction |
 | EfficientNet Focal γ | 0.0 (standard CE) | γ>0 caused early overfitting for this architecture on this dataset |
 | Clinical threshold method | argmax-θ, not F-beta | F-beta with aggressive floor severely degraded NV sensitivity (−0.13), the majority class |
 | AKIEC specificity floor | 0.70, not 0.85 | Only 75 val samples; demanding spec≥0.85 left no valid threshold candidates |
@@ -132,18 +140,26 @@ Each architectural choice was made deliberately and is documented here for repro
 
 ## Comparison with published methods
 
-Results on the ISIC 2018 Task 3 test set from published work. Challenge submissions were evaluated on the official 1512-image test set; this work uses a custom 60/20/20 stratified split of HAM10000 (2348 test images).
+Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were evaluated on the official closed 1512-image test set; this work uses a custom 60/20/20 stratified split of HAM10000 (2348 test images).
 
-| Method | BACC | Extra data | Notes |
-|---|---|---|---|
-| MetaOptima (challenge winner) | ~0.885 | ✓ | Large ensemble, external dermatology datasets |
-| Liu et al. — patient metadata embedding | 0.887 | ✗ | Additional age/sex/location metadata as input |
-| Kitada & Iyatomi — SE-ResNet101 + semi-supervised | 0.872 | ✗ | Mean-teacher semi-supervised, hair augmentation |
-| Gessert et al. — DenseNet+SENet+ResNeXt ensemble | ~0.860 | ✗ | Multi-crop evaluation, loss weighting |
-| Mahbod et al. — Inception ensemble (DABEA) | 0.837 | ✗ | 1×1 conv meta-learner |
-| **This work** — ResNet50+DenseNet121+EfficientNet-B3 | **0.846 ± 0.009** | ✗ | TTA ×10, clinical threshold calibration, 3 seeds |
+| Method | BACC | Extra data | Evaluated on | Notes |
+|---|---|---|---|---|
+| Nozdryn-Plotnicki et al. (challenge winner) | 0.885 | n/r | Official test set | Highest of the 141 submissions to Task 3 |
+| Gessert et al. · DenseNet+SENet+ResNeXt ensemble | 0.856 | Yes | Official test set | Multi-crop evaluation, loss weighting |
+| Zhuang et al. · CNN ensemble | 0.845 | No | Official test set | |
+| Mahbod et al. · multi-scale multi-network fusion | 0.836 | No | Official test set | Single model, no final ensemble |
+| Shen et al. · EfficientNet-B2 + augmentation search | 0.853 | No | Custom split | |
+| Kitada \& Iyatomi · SENet + semi-supervised | 0.872 | No | **Validation set** | Mean-teacher semi-supervised |
+| **This work** · ResNet50+DenseNet121+EfficientNet-B3 | **0.846 ± 0.009** | No | Custom split | TTA ×10, clinical threshold calibration, 3 seeds |
 
-> **Note:** Top methods use the official ISIC evaluation server and in some cases external data. This work uses only HAM10000 in a reproducible custom split — making it directly comparable to methods without external data. The ±0.009 standard deviation across 3 independent seeds demonstrates robustness.
+> **How to read this table.** The official challenge report states that the highest balanced
+> accuracy achieved across the 141 Task 3 submissions was 0.885. The challenge permitted
+> external training data, but its use by individual submissions is not systematically reported
+> (n/r). Note that the Kitada & Iyatomi figure is measured on the official *validation* set
+> rather than the closed test set, so it is not directly comparable to the rows above it.
+> Restricted to HAM10000 without external data, this work falls within the range achieved by
+> comparable methods. The ±0.009 standard deviation across 3 independent seeds quantifies
+> run-to-run variance.
 
 ---
 
@@ -158,7 +174,7 @@ Results on the ISIC 2018 Task 3 test set from published work. Challenge submissi
 - **Grad-CAM**: visualisation of attended regions for the best individual model
 - **Clinical threshold calibration**: two-level fallback (strict floor → relaxed floor → argmax)
 - **Checkpoint management**: `RESUME_FROM_CHECKPOINTS`, `FORCE_RETRAIN`, `LOAD_TTA_FROM_DIR` modes
-- **Unit tests**: 46 tests covering split determinism, loss behaviour, clinical threshold logic, early stopping and augmentation correctness — runnable locally with `make test`
+- **Unit tests**: 46 tests covering split determinism, loss behaviour, clinical threshold logic, early stopping and augmentation correctness, runnable locally with `make test`
 - **Reproducibility**: all experiments fully reproducible via `RNG_SEED`
 - **Automatic PDF report**: every run generates a complete results report including training curves, confusion matrices, ROC and Precision-Recall curves, Grad-CAM visualisations, clinical threshold reliability analysis, and per-class sensitivity/specificity tables
 
@@ -224,15 +240,15 @@ paths:
   outputs:    "./outputs"
 ```
 
-> **Important:** `configs/config.yaml` is used exclusively by `scripts/train.py` for local execution. The standalone script `CodigoTFG_DanielOrtiz.py` (used on Colab and Kaggle) is configured through the variables at the top of `notebooks/02_training_pipeline.ipynb` — editing `config.yaml` has no effect on cloud runs.
+> **Important:** `configs/config.yaml` is used exclusively by `scripts/train.py` for local execution. The standalone script `CodigoTFG_DanielOrtiz.py` (used on Colab and Kaggle) is configured through the variables at the top of `notebooks/02_training_pipeline.ipynb`. Editing `config.yaml` has no effect on cloud runs.
 
 The monolithic script `CodigoTFG_DanielOrtiz.py` expects the dataset at `~/ISIC2018_Task3/` by default. If you place the dataset there with the same folder structure shown in [Download the dataset](#2-download-the-dataset), no path changes are needed.
 
-> **Note on local GPU:** training without a CUDA GPU is technically possible but impractical — expect days instead of hours. For experimentation without a GPU, reduce `USE_PERCENT` in the config to use a fraction of the dataset.
+> **Note on local GPU:** training without a CUDA GPU is technically possible but impractical: expect days instead of hours. For experimentation without a GPU, reduce `USE_PERCENT` in the config to use a fraction of the dataset.
 
 #### Google Colab / Kaggle
 
-No path configuration needed — the pipeline auto-detects the environment and reads from Drive or Kaggle input automatically. See [Usage → Google Colab / Kaggle](#google-colab) for full instructions.
+No path configuration needed. The pipeline auto-detects the environment and reads from Drive or Kaggle input automatically. See [Usage → Google Colab / Kaggle](#google-colab) for full instructions.
 
 ---
 
@@ -281,9 +297,9 @@ python scripts/visualize_ensemble.py --checkpoint outputs/<timestamp>
 ```
 
 Generates three figures in `outputs/.../figures/`:
-- **`1_probability_distributions.png`** — for a sample of test images, bar chart of P(class|image) for all 7 classes as percentages, with true label and clinical threshold marked
-- **`2_threshold_effect.png`** — cases where the clinical threshold changed the argmax prediction, showing exactly how the override works
-- **`3_confidence_heatmap.png`** — mean probability assigned to each class grouped by true label; high diagonal = good class discrimination
+- **`1_probability_distributions.png`**: for a sample of test images, bar chart of P(class|image) for all 7 classes as percentages, with true label and clinical threshold marked
+- **`2_threshold_effect.png`**: cases where the clinical threshold changed the argmax prediction, showing exactly how the override works
+- **`3_confidence_heatmap.png`**: mean probability assigned to each class grouped by true label; high diagonal = good class discrimination
 
 
 ### Output files
@@ -345,21 +361,21 @@ LOAD_TTA_FROM_DIR       = False          # True to recalibrate thresholds only
 
 ### Kaggle
 
-**1.** Add the dataset to your notebook — two options:
+**1.** Add the dataset to your notebook. Two options:
 
-- **Use the existing dataset** (recommended): click `+ Add data` in your Kaggle notebook and search for `danielortizrequena/isic2018-task3`. No download or upload needed — the pipeline reads it directly from `/kaggle/input/` with no configuration changes.
+- **Use the existing dataset** (recommended): click `+ Add data` in your Kaggle notebook and search for `danielortizrequena/isic2018-task3`. No download or upload needed. The pipeline reads it directly from `/kaggle/input/` with no configuration changes.
 - **Upload your own copy**: upload the dataset to your Kaggle account and set `KAGGLE_DATASET_SLUG = 'your-username/your-dataset-name'` in the notebook.
 
-**2.** Open `notebooks/02_training_pipeline.ipynb` in Kaggle. The default slug already points to the existing dataset — no changes needed if you used option A above:
+**2.** Open `notebooks/02_training_pipeline.ipynb` in Kaggle. The default slug already points to the existing dataset, so no changes are needed if you used option A above:
 ```python
 KAGGLE_DATASET_SLUG = 'danielortizrequena/isic2018-task3'  # default, change only if using your own copy
 ```
 
 **3.** The pipeline auto-detects Kaggle via environment variables and reads images from `/kaggle/input/`. Outputs are saved to `/kaggle/working/OUTPUTS/`.
 
-**4.** Enable GPU in Settings → Accelerator → GPU P100. Kaggle sessions allow up to 12 hours. A full training run takes approximately **2.5 hours** on P100 — well within the session limit.
+**4.** Enable GPU in Settings → Accelerator → GPU P100. Kaggle sessions allow up to 12 hours. A full training run takes approximately **2.5 hours** on P100, well within the session limit.
 
-> **Colab vs Kaggle:** Kaggle's P100 is faster for EfficientNet-B3 (larger batch size possible). Colab's T4 is more accessible for interactive development. Both platforms produce valid results — minor differences (±0.009 BACC) are expected and documented in the robustness analysis.
+> **Colab vs Kaggle:** Kaggle's P100 is faster for EfficientNet-B3 (larger batch size possible). Colab's T4 is more accessible for interactive development. Both platforms produce valid results. Minor differences (±0.009 BACC) are expected and documented in the robustness analysis.
 
 ---
 
@@ -372,19 +388,19 @@ KAGGLE_DATASET_SLUG = 'danielortizrequena/isic2018-task3'  # default, change onl
 > outputs folder in Drive, containing training curves, per-epoch metrics, all confusion matrices,
 > ROC and Precision-Recall curves, Grad-CAM visualisations, and clinical reliability analysis.
 
-### Confusion matrix — TTA Ensemble + clinical thresholds
+### Confusion matrix: TTA Ensemble + clinical thresholds
 
 ![Confusion Matrix](docs/results_confusion_matrix.png)
 
-### ROC curves — TTA Ensemble (test set)
+### ROC curves: TTA Ensemble (test set)
 
 ![ROC Curves](docs/results_roc_curves.png)
 
-### Grad-CAM — model attention on test images
+### Grad-CAM: model attention on test images
 
 ![Grad-CAM](docs/results_gradcam.png)
 
-> Grad-CAM heatmaps for ResNet-50 on one true positive per class. Red regions indicate the areas with the strongest influence on the prediction. In all cases the model attends to the lesion rather than background or dermatoscope artefacts — a key requirement for clinical plausibility.
+> Grad-CAM heatmaps for ResNet-50 on one true positive per class. Red regions indicate the areas with the strongest influence on the prediction. In all cases the model attends to the lesion rather than background or dermatoscope artefacts, which is a key requirement for clinical plausibility.
 
 ### Per-class metrics (seed 42, reference run)
 
@@ -400,7 +416,7 @@ KAGGLE_DATASET_SLUG = 'danielortizrequena/isic2018-task3'  # default, change onl
 
 Calibrated thresholds: `θ_MEL = 0.337`, `θ_AKIEC = 0.391`
 
-### Strategy comparison — individual models vs ensemble vs clinical thresholds
+### Strategy comparison: individual models vs ensemble vs clinical thresholds
 
 ![Results comparison](docs/results_comparison.png)
 
@@ -469,11 +485,12 @@ skin-lesion-classifier-CNN/
 ### Why BACC varies across seeds (±0.009)
 
 All three seeds use identical hyperparameters and the same deterministic split algorithm.
-The observed variance comes from hardware-level non-determinism: Colab assigns T4 GPUs
-and Kaggle assigns P100 GPUs, whose different memory bandwidth and CUDA kernel scheduling
-affect floating-point accumulation order. This is not a code issue — it is an inherent
-property of deep learning on shared cloud infrastructure and is consistent with variance
-reported in the literature for similar architectures.
+The variance is consistent with hardware-level non-determinism: the runs were executed on
+Colab (T4) and Kaggle (P100), and differences in memory bandwidth and CUDA kernel scheduling
+affect floating-point accumulation order. Note that seed and platform vary together across
+the three runs, so their contributions cannot be separated with this design; isolating them
+would require repeating each seed on both platforms. Either way, the magnitude is consistent
+with variance reported in the literature for similar architectures.
 
 ### Why MEL sensitivity does not always reach ≥0.85
 
@@ -486,8 +503,8 @@ to affect test-set sensitivity. Seed 123 achieves 0.877 (target met); seed 42 re
 
 ### Why AKIEC is the hardest class to calibrate
 
-AKIEC has only 327 training images (2.8% of the dataset) and 75 validation images.
-With so few validation samples, each image counts for ±0.013 of sensitivity — making
+AKIEC has only 226 training images (3.2% of the training set) and 75 validation images.
+With so few validation samples, each image counts for ±0.013 of sensitivity, making
 the calibrated threshold statistically fragile. The specificity floor is relaxed to 0.70
 for this reason. More AKIEC data (available in ISIC 2019/2020) would stabilise calibration.
 
@@ -506,7 +523,7 @@ to single-modality methods without external data, against which it is competitiv
 
 This system is a research prototype evaluated on a controlled dataset split.
 It is not validated for clinical deployment. Sensitivity and specificity values
-are reported on a held-out test set under controlled conditions — real-world
+are reported on a held-out test set under controlled conditions. Real-world
 performance on out-of-distribution images (different cameras, lighting, patient
 demographics) would require additional validation studies.
 
@@ -542,7 +559,7 @@ torch.backends.cudnn.benchmark = False
 
 The dataset split is fully deterministic: image IDs are sorted lexicographically before shuffling, and classes are iterated alphabetically. A `split_assignment.json` is saved with every run to guarantee that resumption uses the exact same train/val/test partition.
 
-> **Note on hardware variability:** Results may vary slightly across GPU hardware even with a fixed seed, due to CuDNN kernel non-determinism. See [*Limitations — Why BACC varies across seeds*](#limitations-and-discussion) for a detailed explanation. The robustness analysis across 3 seeds quantifies this variance at ±0.009 BACC.
+> **Note on hardware variability:** Results may vary slightly across GPU hardware even with a fixed seed, due to CuDNN kernel non-determinism. See [*Limitations: Why BACC varies across seeds*](#limitations-and-discussion) for a detailed explanation. The robustness analysis across 3 seeds quantifies this variance at ±0.009 BACC.
 
 ---
 
@@ -569,14 +586,14 @@ For plain-text citation (e.g. APA):
 
 ## Acknowledgements
 
-- Dataset: [HAM10000 / ISIC 2018 Challenge Task 3](https://challenge.isic-archive.com/landing/2018/47/) — Tschandl et al., 2018
+- Dataset: [HAM10000 / ISIC 2018 Challenge Task 3](https://challenge.isic-archive.com/landing/2018/47/), Tschandl et al., 2018
 - Pretrained weights: [torchvision models](https://pytorch.org/vision/stable/models.html) (ImageNet-1K)
 - Augmentation library: [Albumentations](https://albumentations.ai/)
-- Tutor: Enrique Domínguez Merino — Universidad de Málaga
+- Tutor: Enrique Domínguez Merino, Universidad de Málaga
 - Compute: experiments run on Google Colab (T4 GPU) and Kaggle (P100 GPU) free-tier platforms
 
 ---
 
 ## License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
