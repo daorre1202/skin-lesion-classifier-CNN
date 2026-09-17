@@ -21,8 +21,10 @@
 > **Versions.** Tag `v1.0` is the exact state cited in the Bachelor's thesis deposited in
 > RIUMA (University of Málaga) and is preserved unchanged for verifiability. Tag `v1.0.1`
 > contains documentation corrections to this README only; the pipeline, the results and the
-> reported figures are identical. Development continues beyond that point; to reproduce the
-> results reported in a given publication, use the tag indicated there.
+> reported figures are identical. Tag `v1.1` adds the paired bootstrap test of the calibration
+> gain (`scripts/bootstrap_paired.py`) with the seed-42 test probabilities it reads, and corrects
+> the Mahbod et al. row of the comparison table; training code and results are unchanged.
+> To reproduce the results reported in a given publication, use the tag indicated there.
 
 ---
 
@@ -51,6 +53,9 @@ make train
 
 # Visualise ensemble output on a trained checkpoint
 make visualize DIR=outputs/<timestamp>
+
+# Paired bootstrap of the calibration gain (CPU, seconds; uses results/seed_42/)
+python scripts/bootstrap_paired.py
 ```
 
 ---
@@ -98,6 +103,17 @@ The pipeline is designed as a progressive stack, where each component adds measu
 
 All three seeds achieve malignant-class BACC > 0.80 with clinical threshold calibration, confirming that the improvement in malignant lesion detection is consistent and not specific to a single run.
 
+### Statistical significance of the calibration gain
+
+Paired bootstrap over the 2348 test images of the reference run (B = 10,000, `numpy.random.default_rng(42)`). Thresholds stay fixed at their validation values, and both decision rules are applied to the same resampled images in each replicate.
+
+| Metric | Argmax | + Clinical thresholds | Δ (95% CI) | P(Δ > 0) |
+|---|---|---|---|---|
+| Malignant BACC | 0.7748 | 0.8015 | +0.027 [+0.014, +0.039] | 100% |
+| Global BACC | 0.8486 | 0.8546 | +0.006 [+0.0002, +0.012] | 97.8% |
+
+The malignant gain is robust; the global change is marginal. Source: `results/seed_42/bootstrap_summary.json`, reproducible with `python scripts/bootstrap_paired.py`.
+
 The repository contains both a standalone script (`CodigoTFG_DanielOrtiz.py`) optimised for cloud execution on Colab and Kaggle, and a modular Python package (`src/skin_classifier/`) following software engineering best practices. Both implement the same pipeline: the standalone script for reproducible training, the package for extensibility and unit testing.
 
 ---
@@ -144,18 +160,18 @@ Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were eval
 
 | Method | BACC | Extra data | Evaluated on | Notes |
 |---|---|---|---|---|
-| Nozdryn-Plotnicki et al. (challenge winner) | 0.885 | n/r | Official test set | Highest of the 141 submissions to Task 3 |
+| Nozdryn-Plotnicki et al. (challenge winner) | 0.885 | Yes | Official test set | Highest of the 141 submissions to Task 3 |
 | Gessert et al. · DenseNet+SENet+ResNeXt ensemble | 0.856 | Yes | Official test set | Multi-crop evaluation, loss weighting |
 | Zhuang et al. · CNN ensemble | 0.845 | No | Official test set | |
-| Mahbod et al. · multi-scale multi-network fusion | 0.836 | No | Official test set | Single model, no final ensemble |
+| Mahbod et al. · multi-scale multi-network fusion | 0.862 | Yes | Official test set | Three-level fusion of three CNNs over six crop scales |
 | Shen et al. · EfficientNet-B2 + augmentation search | 0.853 | No | Custom split | |
 | Kitada \& Iyatomi · SENet + semi-supervised | 0.872 | No | **Validation set** | Mean-teacher semi-supervised |
 | **This work** · ResNet50+DenseNet121+EfficientNet-B3 | **0.846 ± 0.009** | No | Custom split | TTA ×10, clinical threshold calibration, 3 seeds |
 
 > **How to read this table.** The official challenge report states that the highest balanced
 > accuracy achieved across the 141 Task 3 submissions was 0.885. The challenge permitted
-> external training data, but its use by individual submissions is not systematically reported
-> (n/r). Note that the Kitada & Iyatomi figure is measured on the official *validation* set
+> external training data; the extra-data classification of the official-test-set entries follows
+> Shen et al. (2022). Note that the Kitada & Iyatomi figure is measured on the official *validation* set
 > rather than the closed test set, so it is not directly comparable to the rows above it.
 > Restricted to HAM10000 without external data, this work falls within the range achieved by
 > comparable methods. The ±0.009 standard deviation across 3 independent seeds quantifies
@@ -461,12 +477,18 @@ skin-lesion-classifier-CNN/
 │           └── io.py             # Logging, file utilities
 ├── scripts/
 │   ├── train.py                  # Main entry point
-│   └── visualize_ensemble.py     # Probability distribution figures
+│   ├── visualize_ensemble.py     # Probability distribution figures
+│   └── bootstrap_paired.py       # Paired bootstrap of the calibration gain
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb  ← class distribution, sample images, augmentation demo
 │   └── 02_training_pipeline.ipynb
 ├── results/
-│   ├── seed_42/results.json         # Metrics for seed 42 reference run
+│   ├── seed_42/
+│   │   ├── results.json             # Metrics for seed 42 reference run
+│   │   ├── tta_sum_probs.csv        # TTA ensemble test probabilities (2348 x 7)
+│   │   ├── tta_labels.csv           # Test ground-truth class indices
+│   │   ├── calibrated_thresholds.json
+│   │   └── bootstrap_summary.json   # Output of scripts/bootstrap_paired.py
 │   ├── seed_7/results.json          # Metrics for seed 7 robustness run
 │   ├── seed_123/results.json        # Metrics for seed 123 robustness run
 │   └── robustness_summary.json      # Aggregated 3-seed analysis

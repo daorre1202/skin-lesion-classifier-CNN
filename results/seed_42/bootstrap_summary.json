@@ -1,0 +1,32 @@
+{
+  "n_images": 2348,
+  "n_boot": 10000,
+  "seed": 42,
+  "rng": "numpy.random.default_rng",
+  "thresholds": {
+    "MEL": 0.33666666666666667,
+    "AKIEC": 0.3911111111111111
+  },
+  "point_estimates": {
+    "global_bacc_argmax": 0.8485985513973036,
+    "global_bacc_thresholds": 0.8545981089593978,
+    "malignant_bacc_argmax": 0.7748165397820571,
+    "malignant_bacc_thresholds": 0.8015240749033853
+  },
+  "delta_malignant_bacc": {
+    "ci95": [
+      0.014270303205299406,
+      0.03929199463097294
+    ],
+    "mean": 0.026693761525985446,
+    "p_delta_gt_0": 1.0
+  },
+  "delta_global_bacc": {
+    "ci95": [
+      0.0001603102282053627,
+      0.011759948180227848
+    ],
+    "mean": 0.005996340693942939,
+    "p_delta_gt_0": 0.9776
+  }
+}
