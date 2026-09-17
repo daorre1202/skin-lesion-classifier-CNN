@@ -23,7 +23,8 @@
 > contains documentation corrections to this README only; the pipeline, the results and the
 > reported figures are identical. Tag `v1.1` adds the paired bootstrap test of the calibration
 > gain (`scripts/bootstrap_paired.py`) with the seed-42 test probabilities it reads, and corrects
-> the Mahbod et al. row of the comparison table; training code and results are unchanged.
+> the Mahbod et al. row of the comparison table. Tag `v1.1.1` adds the melanoma sensitivity-target
+> sweep (`scripts/threshold_sweep.py`). Training code and results are unchanged.
 > To reproduce the results reported in a given publication, use the tag indicated there.
 
 ---
@@ -113,6 +114,20 @@ Paired bootstrap over the 2348 test images of the reference run (B = 10,000, `nu
 | Global BACC | 0.8486 | 0.8546 | +0.006 [+0.0002, +0.012] | 97.8% |
 
 The malignant gain is robust; the global change is marginal. Source: `results/seed_42/bootstrap_summary.json`, reproducible with `python scripts/bootstrap_paired.py`.
+
+### Sensitivity to the melanoma target
+
+The 0.85 sensitivity target is fixed by the clinical requirement. Recalibrating the MEL threshold on validation for other targets shows what the choice costs and buys (`python scripts/threshold_sweep.py`):
+
+| MEL target | θ | Val BACC | Val malignant BACC | Test BACC | Test malignant BACC |
+|---|---|---|---|---|---|
+| 0.75 | 0.460 | 0.8481 | 0.8263 | 0.8475 | 0.7721 |
+| 0.80 | 0.401 | 0.8508 | 0.8365 | 0.8519 | 0.7849 |
+| **0.85** | **0.337** | **0.8478** | **0.8365** | **0.8546** | **0.8015** |
+| 0.90 | 0.233 | 0.8375 | 0.8358 | 0.8458 | 0.8146 |
+| 0.95 | 0.178 | 0.8298 | 0.8466 | 0.8385 | 0.8212 |
+
+Targets at or above 0.90 raise melanoma sensitivity at a growing cost in global balanced accuracy. Test columns are reported for reference; no threshold was selected on test.
 
 The repository contains both a standalone script (`CodigoTFG_DanielOrtiz.py`) optimised for cloud execution on Colab and Kaggle, and a modular Python package (`src/skin_classifier/`) following software engineering best practices. Both implement the same pipeline: the standalone script for reproducible training, the package for extensibility and unit testing.
 
@@ -478,7 +493,8 @@ skin-lesion-classifier-CNN/
 ├── scripts/
 │   ├── train.py                  # Main entry point
 │   ├── visualize_ensemble.py     # Probability distribution figures
-│   └── bootstrap_paired.py       # Paired bootstrap of the calibration gain
+│   ├── bootstrap_paired.py       # Paired bootstrap of the calibration gain
+│   └── threshold_sweep.py        # MEL sensitivity-target sweep
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb  ← class distribution, sample images, augmentation demo
 │   └── 02_training_pipeline.ipynb
@@ -487,8 +503,11 @@ skin-lesion-classifier-CNN/
 │   │   ├── results.json             # Metrics for seed 42 reference run
 │   │   ├── tta_sum_probs.csv        # TTA ensemble test probabilities (2348 x 7)
 │   │   ├── tta_labels.csv           # Test ground-truth class indices
+│   │   ├── tta_val_sum.csv          # TTA ensemble validation probabilities (2342 x 7)
+│   │   ├── tta_val_labels.csv       # Validation ground-truth class indices
 │   │   ├── calibrated_thresholds.json
-│   │   └── bootstrap_summary.json   # Output of scripts/bootstrap_paired.py
+│   │   ├── bootstrap_summary.json   # Output of scripts/bootstrap_paired.py
+│   │   └── threshold_sweep.json     # Output of scripts/threshold_sweep.py
 │   ├── seed_7/results.json          # Metrics for seed 7 robustness run
 │   ├── seed_123/results.json        # Metrics for seed 123 robustness run
 │   └── robustness_summary.json      # Aggregated 3-seed analysis
