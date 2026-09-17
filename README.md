@@ -176,18 +176,18 @@ Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were eval
 | Method | BACC | Extra data | Evaluated on | Notes |
 |---|---|---|---|---|
 | Nozdryn-Plotnicki et al. (challenge winner) | 0.885 | Yes | Official test set | Highest of the 141 submissions to Task 3 |
-| Gessert et al. · DenseNet+SENet+ResNeXt ensemble | 0.856 | Yes | Official test set | Multi-crop evaluation, loss weighting |
-| Zhuang et al. · CNN ensemble | 0.845 | No | Official test set | |
-| Mahbod et al. · multi-scale multi-network fusion | 0.862 | Yes | Official test set | Three-level fusion of three CNNs over six crop scales |
-| Shen et al. · EfficientNet-B2 + augmentation search | 0.853 | No | Custom split | |
 | Kitada \& Iyatomi · SENet + semi-supervised | 0.872 | No | **Validation set** | Mean-teacher semi-supervised |
+| Mahbod et al. · multi-scale multi-network fusion | 0.862 | Yes | Official test set | Three-level fusion of three CNNs over six crop scales |
+| Gessert et al. · DenseNet+SENet+ResNeXt ensemble | 0.856 | Yes | Official test set | Multi-crop evaluation, loss weighting |
+| Shen et al. · EfficientNet-B2 + augmentation search | 0.853 | No | Custom split | |
 | **This work** · ResNet50+DenseNet121+EfficientNet-B3 | **0.846 ± 0.009** | No | Custom split | TTA ×10, clinical threshold calibration, 3 seeds |
+| Zhuang et al. · CNN ensemble | 0.845 | No | Official test set | |
 
 > **How to read this table.** The official challenge report states that the highest balanced
 > accuracy achieved across the 141 Task 3 submissions was 0.885. The challenge permitted
 > external training data; the extra-data classification of the official-test-set entries follows
 > Shen et al. (2022). Note that the Kitada & Iyatomi figure is measured on the official *validation* set
-> rather than the closed test set, so it is not directly comparable to the rows above it.
+> rather than the closed test set, so it is not directly comparable to the other rows.
 > Restricted to HAM10000 without external data, this work falls within the range achieved by
 > comparable methods. The ±0.009 standard deviation across 3 independent seeds quantifies
 > run-to-run variance.
