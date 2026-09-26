@@ -7,6 +7,7 @@
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat)
 ![Dataset](https://img.shields.io/badge/Dataset-ISIC%202018%20Task%203-blue?style=flat)
 ![BACC](https://img.shields.io/badge/BACC-0.846_±_0.009-brightgreen?style=flat)
+![Grade](https://img.shields.io/badge/TFG_grade-10%2F10-brightgreen?style=flat)
 ![CI](https://github.com/daorre1202/skin-lesion-classifier-CNN/actions/workflows/ci.yml/badge.svg)
 [![Kaggle](https://img.shields.io/badge/Kaggle-Results_Notebook-20BEFF?style=flat&logo=kaggle&logoColor=white)](https://www.kaggle.com/code/danielortizrequena/cnn-ensemble-tta-clinical-thresholds-isic2018)
 ![Release](https://img.shields.io/github/v/release/daorre1202/skin-lesion-classifier-CNN?style=flat)
@@ -18,18 +19,26 @@
 
 ---
 
-> **Versions.** Tag `v1.0` is the exact state cited in the Bachelor's thesis deposited in
+> **Thesis status.** This repository is the codebase for an undergraduate thesis (TFG,
+> Ingeniería de la Salud, Universidad de Málaga), defended on 24 September 2026 with a
+> grade of **10/10**. The version deposited in RIUMA (link pending) has an erratum, listed
+> in [`ERRATA.md`](ERRATA.md) (Spanish); a corrected PDF is attached to release `v1.1.2`.
+> Tag `1.0` below is the exact code and results cited in the thesis, and remains unchanged.
+
+> **Versions.** Tag `1.0` is the exact state cited in the Bachelor's thesis deposited in
 > RIUMA (University of Málaga) and is preserved unchanged for verifiability. Tag `v1.0.1`
 > contains documentation corrections to this README only; the pipeline, the results and the
 > reported figures are identical. Tag `v1.1` adds the paired bootstrap test of the calibration
 > gain (`scripts/bootstrap_paired.py`) with the seed-42 test probabilities it reads, and corrects
 > the Mahbod et al. row of the comparison table. Tag `v1.1.1` adds the melanoma sensitivity-target
-> sweep (`scripts/threshold_sweep.py`). Training code and results are unchanged.
-> To reproduce the results reported in a given publication, use the tag indicated there.
+> sweep (`scripts/threshold_sweep.py`). Tag `v1.1.2` adds [`ERRATA.md`](ERRATA.md), documenting
+> corrections made to the thesis text after deposit. Training code and reported results are
+> identical across all tags. To reproduce the results reported in a given publication, use the
+> tag indicated there.
 
 ---
 
-> **Clinical motivation:** Melanoma is the deadliest form of skin cancer, yet its 5-year survival rate exceeds 99% when detected at an early stage. Dermoscopy-based deep learning classifiers can assist dermatologists in screening, but standard accuracy metrics are insufficient for clinical use: a system that correctly classifies 95% of images while missing 30% of melanomas is clinically dangerous. This project addresses that gap by combining a weighted CNN ensemble with per-class probability threshold calibration that explicitly targets **sensitivity ≥ 0.85 for melanoma** and **≥ 0.75 for actinic keratoses**, accepting a minimal reduction in global balanced accuracy in exchange for clinically meaningful malignant-class detection.
+> **Clinical motivation:** Melanoma is the deadliest form of skin cancer, yet its 5-year survival rate exceeds 99% when detected at an early stage. Dermoscopy-based deep learning classifiers can assist dermatologists in screening, but standard accuracy metrics are insufficient for clinical use: a system that correctly classifies 95% of images while missing 30% of melanomas is clinically dangerous. This project addresses that gap by combining a weighted CNN ensemble with per-class probability threshold calibration that explicitly targets **sensitivity ≥ 0.85 for melanoma** and **≥ 0.75 for actinic keratoses**, with at most a marginal change in global balanced accuracy.
 
 ---
 
@@ -65,7 +74,7 @@ python scripts/bootstrap_paired.py
 
 This project implements an end-to-end deep learning pipeline for the automated classification of dermoscopic skin lesion images, addressing the **ISIC 2018 Challenge Task 3** (HAM10000 dataset, 11,720 images across all splits, 7 classes). The system is designed with clinical deployment constraints in mind: beyond optimising global accuracy, it incorporates class-specific probability threshold calibration to meet clinically meaningful sensitivity targets for malignant lesions. This is the distinction that separates clinically useful systems from academically accurate ones.
 
-The pipeline combines three pretrained CNN architectures into a **weighted ensemble**, applies **Test-Time Augmentation (TTA)** at inference, and uses **Grad-CAM** visualisations to provide interpretability for clinical validation. A robustness analysis across three independent random seeds (42, 7, 123) on two cloud GPU platforms (Google Colab T4, Kaggle P100) confirms stable generalisation with a standard deviation of ±0.009 BACC, comparable to variance reported in published ensemble methods on this benchmark.
+The pipeline combines three pretrained CNN architectures into a **weighted ensemble**, applies **Test-Time Augmentation (TTA)** at inference, and uses **Grad-CAM** visualisations to provide interpretability for clinical validation. A robustness analysis across three independent random seeds (42, 7, 123) on two cloud GPU platforms (Google Colab T4, Kaggle P100) gives a standard deviation of ±0.009 BACC, in line with the spread reported for similar ensembles in the literature.
 
 ### Key results
 
@@ -78,7 +87,7 @@ The pipeline is designed as a progressive stack, where each component adds measu
 | + Test-Time Augmentation (10 rounds) | 0.8486 | 0.7748 ¹ |
 | + Clinical threshold calibration | **0.8546** | **0.8015 (+0.027)** |
 
-> The clinical threshold step is the key differentiator: it trades a small reduction in global accuracy for a consistent +0.027 improvement in malignant-class detection, which covers the classes where a missed diagnosis carries the greatest clinical risk.
+> The clinical threshold step is the key differentiator. On the reference run it raises malignant-class BACC by +0.027 while global BACC changes by only +0.006; across the three seeds, the calibrated malignant-class BACC stays within 0.801–0.806. These are the classes where a missed diagnosis carries the greatest clinical risk.
 
 ### Full results (seed 42 reference run)
 
@@ -92,7 +101,7 @@ The pipeline is designed as a progressive stack, where each component adds measu
 | Malignant-class BACC with thresholds (all 3 seeds) | **0.801 – 0.806** |
 | MEL sensitivity with clinical thresholds | up to **0.877** (seed 123) |
 
-> ¹ Argmax baseline from reference run PDF (v1.0 release). All other values verified in `results/` JSON files.
+> ¹ Argmax baseline of the reference run, recorded in `results/seed_42/bootstrap_summary.json`. All values in this section can be checked against the JSON files in `results/`.
 
 ### Per-seed robustness
 
@@ -102,7 +111,7 @@ The pipeline is designed as a progressive stack, where each component adds measu
 | 7   | 0.8361 | 0.8348 | **0.8060** | 0.828 | 0.727 |
 | 123 | **0.8545** | 0.8463 | **0.8049** | **0.877** | 0.649 |
 
-All three seeds achieve malignant-class BACC > 0.80 with clinical threshold calibration, confirming that the improvement in malignant lesion detection is consistent and not specific to a single run.
+All three seeds achieve malignant-class BACC > 0.80 with clinical threshold calibration, confirming that the level reached is not specific to a single run. Each seed produces its own train/val/test partition with the same deterministic split algorithm; see [Limitations](#limitations-and-discussion) for what that means for cross-seed comparisons.
 
 ### Statistical significance of the calibration gain
 
@@ -141,7 +150,7 @@ All three backbones are initialised from **ImageNet pretrained weights** and fin
 
 ### Clinical threshold calibration
 
-Standard argmax at 0.5 probability yields suboptimal sensitivity for malignant classes. The pipeline calibrates class-specific thresholds on the **validation set only** (never test set):
+Standard argmax decisions yield suboptimal sensitivity for malignant classes. The pipeline calibrates class-specific thresholds on the **validation set only** (never test set):
 
 - **MEL**: `argmax-θ` with `sensitivity ≥ 0.85` and `specificity ≥ 0.85`
 - **AKIEC**: `argmax-θ` with `sensitivity ≥ 0.75` and `specificity ≥ 0.70`
@@ -157,21 +166,21 @@ Each architectural choice was made deliberately and is documented here for repro
 
 | Decision | Choice | Reason |
 |---|---|---|
-| Ensemble weighting | Proportional to val BACC | Test set remains unseen during all design decisions |
+| Ensemble weighting | Proportional to val BACC | Computed from validation BACC only; never from test performance |
 | Early stopping score | `w·BACC + (1-w)/(1+loss)` | Mixed score reduces noise from oscillating val metrics in imbalanced datasets |
 | Label smoothing | Applied during training; disabled at validation | Smoothing inflates val loss, causing premature LR reduction |
 | EfficientNet Focal γ | 0.0 (standard CE) | γ>0 caused early overfitting for this architecture on this dataset |
-| Clinical threshold method | argmax-θ, not F-beta | F-beta with aggressive floor severely degraded NV sensitivity (−0.13), the majority class |
-| AKIEC specificity floor | 0.70, not 0.85 | Only 75 val samples; demanding spec≥0.85 left no valid threshold candidates |
-| Augmentation levels | 4 graduated levels by ratio | Uniform heavy augmentation on majority classes degraded their performance |
-| TTA transforms | Geometric only, no colour | Colour changes shift probability distributions and invalidate calibrated thresholds |
+| Clinical threshold method | argmax-θ, not F-beta | F-beta per-class calibration, tested in earlier experiments, cut NV sensitivity by 0.13, the majority class |
+| AKIEC specificity floor | 0.70, not 0.85 | Preventive margin: with only 75 validation samples the threshold position is very sensitive (one image moves sensitivity by 0.013) |
+| Augmentation levels | 4 graduated levels by ratio | Augmentation strength scales with class scarcity; the majority class (NV) is left unaugmented |
+| TTA transforms | Geometric only, no colour | Colour carries diagnostic information in dermoscopy; validation and test must apply exactly the same TTA for the calibrated thresholds to remain meaningful |
 | Split determinism | Sorted IDs + alphabetical classes | Filesystem ordering varies across sessions; without explicit sorting, splits differ |
 
 ---
 
 ## Comparison with published methods
 
-Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were evaluated on the official closed 1512-image test set; this work uses a custom 60/20/20 stratified split of HAM10000 (2348 test images).
+Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were evaluated on the official 1512-image test set; this work uses a custom 60/20/20 stratified split of HAM10000 (2348 test images).
 
 | Method | BACC | Extra data | Evaluated on | Notes |
 |---|---|---|---|---|
@@ -187,7 +196,7 @@ Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were eval
 > accuracy achieved across the 141 Task 3 submissions was 0.885. The challenge permitted
 > external training data; the extra-data classification of the official-test-set entries follows
 > Shen et al. (2022). Note that the Kitada & Iyatomi figure is measured on the official *validation* set
-> rather than the closed test set, so it is not directly comparable to the other rows.
+> rather than the test set, so it is not directly comparable to the other rows.
 > Restricted to HAM10000 without external data, this work falls within the range achieved by
 > comparable methods. The ±0.009 standard deviation across 3 independent seeds quantifies
 > run-to-run variance.
@@ -197,16 +206,16 @@ Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were eval
 ## Features
 
 - **Multi-environment support**: automatic detection of Google Colab, Kaggle, and local environments
-- **Stratified split** with full determinism: sorted IDs + alphabetical class iteration → same split across sessions
+- **Stratified split** with full determinism: sorted IDs + alphabetical class iteration → same split for a given seed across sessions
 - **Graduated augmentation**: 4 augmentation levels assigned per class based on imbalance ratio
 - **Focal Loss per-model**: `γ=1.0` for ResNet50/DenseNet121, `γ=0.0` (standard CE) for EfficientNet-B3
 - **Mixed early stopping score**: `w·BACC + (1−w)·1/(1+loss)` to reduce noise from oscillating validation
 - **Test-Time Augmentation**: 10-round geometric augmentation ensemble at inference
-- **Grad-CAM**: visualisation of attended regions for the best individual model
+- **Grad-CAM**: visualisation of attended regions for the individual model with the highest validation BACC
 - **Clinical threshold calibration**: two-level fallback (strict floor → relaxed floor → argmax)
 - **Checkpoint management**: `RESUME_FROM_CHECKPOINTS`, `FORCE_RETRAIN`, `LOAD_TTA_FROM_DIR` modes
 - **Unit tests**: 46 tests covering split determinism, loss behaviour, clinical threshold logic, early stopping and augmentation correctness, runnable locally with `make test`
-- **Reproducibility**: all experiments fully reproducible via `RNG_SEED`
+- **Reproducibility**: every source of randomness is seeded via `RNG_SEED`; residual GPU non-determinism is discussed under [Limitations](#limitations-and-discussion)
 - **Automatic PDF report**: every run generates a complete results report including training curves, confusion matrices, ROC and Precision-Recall curves, Grad-CAM visualisations, clinical threshold reliability analysis, and per-class sensitivity/specificity tables
 
 ---
@@ -228,6 +237,11 @@ The project uses the **HAM10000** dataset from the [ISIC 2018 Challenge Task 3](
 
 Split: 60% train / 20% val / 20% test, stratified by class.
 
+> **Note on the split.** The partition is performed at the image level, not at the lesion level.
+> HAM10000 contains multiple images of some lesions, so an image of a given lesion in the
+> training set can share that lesion with an image in validation or test, which tends to
+> inflate estimated performance relative to a strictly lesion-level split.
+
 > The dataset is not included in this repository. See [Setup](#setup) for download instructions.
 
 
@@ -245,7 +259,7 @@ pip install -r requirements.txt
 
 ### 2. Download the dataset
 
-Register and download the three ground-truth CSV files and the training images from [ISIC 2018 Task 3](https://challenge.isic-archive.com/landing/2018/47/). Organise them as:
+Register and download from [ISIC 2018 Task 3](https://challenge.isic-archive.com/landing/2018/47/) the three ground-truth CSV files and the training, validation and test images. The pipeline uses all 11,720 images and re-splits them, so place every image in the same `ISIC2018/` folder:
 
 ```
 ISIC2018_Task3/
@@ -275,7 +289,7 @@ paths:
 
 The monolithic script `CodigoTFG_DanielOrtiz.py` expects the dataset at `~/ISIC2018_Task3/` by default. If you place the dataset there with the same folder structure shown in [Download the dataset](#2-download-the-dataset), no path changes are needed.
 
-> **Note on local GPU:** training without a CUDA GPU is technically possible but impractical: expect days instead of hours. For experimentation without a GPU, reduce `USE_PERCENT` in the config to use a fraction of the dataset.
+> **Note on local GPU:** training without a CUDA GPU is technically possible but impractical: expect days instead of hours. For experimentation without a GPU, reduce `dataset.use_percent` in `configs/config.yaml` (or `USE_PERCENT` in the standalone script) to use a fraction of the dataset.
 
 #### Google Colab / Kaggle
 
@@ -363,7 +377,7 @@ Every run creates a timestamped folder inside `OUTPUTS/` containing:
 | `_thresh` | Threshold-only run (`LOAD_TTA_FROM_DIR` mode) | `2026-05-20_16-00-00_thresh/` |
 | `_e` | Run that failed or was interrupted before completing | `2026-05-20_17-00-00_e/` |
 
-The `.npy` arrays are saved specifically to enable **Mode 3** (threshold recalibration without retraining): loading them with `LOAD_TTA_FROM_DIR` skips all training and TTA, allowing rapid threshold experimentation in under 5 minutes. The `split_assignment.json` guarantees that any resumed run uses the exact same train/val/test partition as the original, preventing data leakage between sessions.
+The `.npy` arrays are saved specifically to enable **Mode 3** (threshold recalibration without retraining): loading them with `LOAD_TTA_FROM_DIR` skips all training and TTA, allowing rapid threshold experimentation in under 5 minutes. The `split_assignment.json` guarantees that a resumed run uses the exact same train/val/test partition as the original run of that seed.
 
 
 ### Google Colab
@@ -406,7 +420,7 @@ KAGGLE_DATASET_SLUG = 'danielortizrequena/isic2018-task3'  # default, change onl
 
 **4.** Enable GPU in Settings → Accelerator → GPU P100. Kaggle sessions allow up to 12 hours. A full training run takes approximately **2.5 hours** on P100, well within the session limit.
 
-> **Colab vs Kaggle:** Kaggle's P100 is faster for EfficientNet-B3 (larger batch size possible). Colab's T4 is more accessible for interactive development. Both platforms produce valid results. Minor differences (±0.009 BACC) are expected and documented in the robustness analysis.
+> **Colab vs Kaggle:** Kaggle's P100 trains faster; Colab's T4 is more accessible for interactive development. Both use the same batch sizes and produce valid results. The seed-42 reference run used Colab and seeds 7 and 123 used Kaggle, so platform and seed vary together within the ±0.009 cross-seed spread (see [Limitations](#limitations-and-discussion)).
 
 ---
 
@@ -460,6 +474,7 @@ Calibrated thresholds: `θ_MEL = 0.337`, `θ_AKIEC = 0.391`
 ```
 skin-lesion-classifier-CNN/
 ├── README.md
+├── ERRATA.md                   ← corrections made to the thesis after deposit
 ├── LICENSE
 ├── CodigoTFG_DanielOrtiz.py    ← standalone Colab/Kaggle script
 ├── Makefile                    ← make test / train / visualize
@@ -490,6 +505,15 @@ skin-lesion-classifier-CNN/
 │           ├── metrics.py        # Per-class sensitivity / specificity
 │           ├── gradcam.py        # Grad-CAM visualisation
 │           └── io.py             # Logging, file utilities
+├── tests/                        # 46 unit tests (pytest), also run in CI
+│   ├── conftest.py
+│   ├── test_splits.py            # Split counts, ratios, determinism
+│   ├── test_transforms.py        # Augmentation levels and validation transform
+│   ├── test_losses.py            # Focal Loss behaviour
+│   ├── test_metrics.py           # Per-class sensitivity / specificity
+│   ├── test_calibration.py       # Threshold calibration and fallback
+│   └── test_early_stopping.py    # Mixed-score early stopping
+├── .github/workflows/ci.yml      # Runs the test suite on every push
 ├── scripts/
 │   ├── train.py                  # Main entry point
 │   ├── visualize_ensemble.py     # Probability distribution figures
@@ -525,40 +549,45 @@ skin-lesion-classifier-CNN/
 
 ### Why BACC varies across seeds (±0.009)
 
-All three seeds use identical hyperparameters and the same deterministic split algorithm.
-The variance is consistent with hardware-level non-determinism: the runs were executed on
-Colab (T4) and Kaggle (P100), and differences in memory bandwidth and CUDA kernel scheduling
-affect floating-point accumulation order. Note that seed and platform vary together across
-the three runs, so their contributions cannot be separated with this design; isolating them
-would require repeating each seed on both platforms. Either way, the magnitude is consistent
-with variance reported in the literature for similar architectures.
+All three seeds use identical hyperparameters, and each seed produces its own train/val/test
+partition with the same deterministic split algorithm — the partitions are not identical
+across seeds. The variance reflects the seed itself, which fixes that partition, the
+classification-head initialisation, the sampling order and the augmentation draws, together
+with hardware-level non-determinism: the runs were executed on Colab (T4) and Kaggle (P100),
+and differences in memory bandwidth and CUDA kernel scheduling affect floating-point
+accumulation order. Seed and platform vary together across the three runs, so their
+contributions cannot be separated with this design; isolating them would require repeating
+each seed on both platforms. Either way, the magnitude is consistent with the spread reported
+in the literature for similar architectures.
 
 ### Why MEL sensitivity does not always reach ≥0.85
 
 The clinical threshold calibrator searches for the highest θ that satisfies both
-`sensitivity ≥ 0.85` and `specificity ≥ 0.85` on the validation set. When the ensemble
-assigns MEL probabilities in a narrow band around the threshold, small shifts in the
-probability distribution (caused by training stochasticity) move the calibrated θ enough
-to affect test-set sensitivity. Seed 123 achieves 0.877 (target met); seed 42 reaches
-0.812. Increasing TTA rounds or ensemble size would reduce this variance.
+`sensitivity ≥ 0.85` and `specificity ≥ 0.85` on the **validation** set. The target is
+therefore met on validation by construction; on test, sensitivity varies around it because
+the 261 test melanomas are a different sample from the 261 validation ones. Across the three
+seeds, test MEL sensitivity is 0.812 (seed 42), 0.828 (seed 7) and 0.877 (seed 123).
 
 ### Why AKIEC is the hardest class to calibrate
 
 AKIEC has only 226 training images (3.2% of the training set) and 75 validation images.
 With so few validation samples, each image counts for ±0.013 of sensitivity, making
 the calibrated threshold statistically fragile. The specificity floor is relaxed to 0.70
-for this reason. More AKIEC data (available in ISIC 2019/2020) would stabilise calibration.
+for this reason. More AKIEC data (available in ISIC 2019) would stabilise calibration.
 
 ### Why the system does not match challenge winners
 
-Top ISIC 2018 submissions (BACC ~0.885–0.895) relied on:
-- **External data**: additional dermoscopy datasets beyond HAM10000
-- **Patient metadata**: age, sex, anatomical location as additional input features
-- **Larger ensembles**: 5–10 models vs 3 here
-- **Specialised augmentation**: synthetic hair overlays, microscope artefacts
+The methods above this work in the [comparison table](#comparison-with-published-methods)
+that are evaluated on the official test set (0.856–0.885) use resources this work excludes
+by design:
+- **External data**: additional dermoscopy images beyond the challenge data
+- **Patient metadata**: age, sex or anatomical location, in some of them
+- **Larger ensembles** than the three models used here
 
-This work uses only the HAM10000 images with no metadata, making it directly comparable
-to single-modality methods without external data, against which it is competitive.
+This work uses only the challenge images, with no external data or metadata, and falls
+within the range of methods under the same restriction. The comparison is not strictly
+matched, because this work evaluates on its own stratified split rather than the official
+test set.
 
 ### Clinical scope and dataset bias
 
@@ -566,7 +595,9 @@ This system is a research prototype evaluated on a controlled dataset split.
 It is not validated for clinical deployment. Sensitivity and specificity values
 are reported on a held-out test set under controlled conditions. Real-world
 performance on out-of-distribution images (different cameras, lighting, patient
-demographics) would require additional validation studies.
+demographics) would require additional validation studies. The split is also
+performed at the image level rather than the lesion level (see [Dataset](#dataset)),
+which can inflate performance for lesions that appear in more than one split.
 
 The HAM10000 dataset is predominantly composed of images from Australian and
 Austrian patients acquired with specific dermatoscope models. Performance on
@@ -578,7 +609,8 @@ medical AI fairness.
 
 ### Future directions
 
-- **Additional data**: incorporating ISIC 2019/2020 images would significantly improve AKIEC calibration stability
+- **Additional data**: incorporating ISIC 2019 images would give AKIEC calibration more validation samples
+- **Lesion-level split**: re-partitioning by lesion rather than by image would remove the overlap noted in [Dataset](#dataset)
 - **Patient metadata**: age, sex, and anatomical location are known discriminative features for dermoscopy classification
 - **Fairness evaluation**: systematic evaluation across skin tones and demographic groups
 - **Prospective validation**: testing on images from different dermatoscope models and clinical settings
@@ -589,7 +621,7 @@ medical AI fairness.
 
 ## Reproducibility
 
-All experiments are fully reproducible. Fixed random seeds are applied across all sources of stochasticity:
+Fixed random seeds are applied across all sources of stochasticity:
 
 ```python
 random.seed(seed); np.random.seed(seed)
@@ -598,7 +630,7 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 ```
 
-The dataset split is fully deterministic: image IDs are sorted lexicographically before shuffling, and classes are iterated alphabetically. A `split_assignment.json` is saved with every run to guarantee that resumption uses the exact same train/val/test partition.
+The dataset split is fully deterministic for a given seed: image IDs are sorted lexicographically before shuffling, and classes are iterated alphabetically. A `split_assignment.json` is saved with every run to guarantee that resuming a run uses the exact same train/val/test partition as that run's original execution. Different seeds produce different partitions by design; see [Limitations](#limitations-and-discussion).
 
 > **Note on hardware variability:** Results may vary slightly across GPU hardware even with a fixed seed, due to CuDNN kernel non-determinism. See [*Limitations: Why BACC varies across seeds*](#limitations-and-discussion) for a detailed explanation. The robustness analysis across 3 seeds quantifies this variance at ±0.009 BACC.
 
@@ -609,19 +641,30 @@ The dataset split is fully deterministic: image IDs are sorted lexicographically
 If you use this code or find it useful, please cite:
 
 ```bibtex
-@misc{ortiz2026skinlesion,
-  author       = {Ortiz Requena, Daniel},
-  url          = {https://github.com/daorre1202/skin-lesion-classifier-CNN},
-  title        = {Skin Lesion Classification with CNN Ensemble},
-  year         = {2026},
-  institution  = {Universidad de Málaga},
-  note         = {Undergraduate thesis (TFG), Ingeniería de la Salud}
+@thesis{ortiz2026tfg,
+  author      = {Ortiz Requena, Daniel},
+  title       = {Clasificación automática de lesiones cutáneas mediante redes neuronales convolucionales},
+  type        = {Undergraduate thesis (TFG), Ingeniería de la Salud},
+  institution = {Universidad de Málaga},
+  year        = {2026},
+  note        = {Defended 24 September 2026, grade 10/10. RIUMA institutional repository (link pending);
+                 see ERRATA.md for corrections made after deposit.}
+}
+
+@software{ortiz2026skinlesion,
+  author  = {Ortiz Requena, Daniel},
+  title   = {Skin Lesion Classification with CNN Ensemble and Clinical Threshold Calibration},
+  year    = {2026},
+  url     = {https://github.com/daorre1202/skin-lesion-classifier-CNN},
+  version = {1.0}
 }
 ```
 
 For plain-text citation (e.g. APA):
 
-> Ortiz Requena, D. (2026). *Skin Lesion Classification with CNN Ensemble* [Undergraduate thesis]. Universidad de Málaga, Ingeniería de la Salud. https://github.com/daorre1202/skin-lesion-classifier-CNN
+> Ortiz Requena, D. (2026). *Clasificación automática de lesiones cutáneas mediante redes neuronales convolucionales* [Undergraduate thesis, grade 10/10]. Universidad de Málaga.
+
+> Ortiz Requena, D. (2026). *Skin Lesion Classification with CNN Ensemble and Clinical Threshold Calibration* (Version 1.0) [Computer software]. https://github.com/daorre1202/skin-lesion-classifier-CNN
 
 ---
 

@@ -35,6 +35,6 @@
     "tta_bacc_std":  0.009,
     "tta_bacc_min":  0.836,
     "tta_bacc_max":  0.855,
-    "note": "Variance across seeds reflects hardware stochasticity (T4 vs P100 GPU sessions). All seeds use identical hyperparameters and the same deterministic split algorithm."
+    "note": "All seeds use identical hyperparameters and the same deterministic split algorithm; each seed produces its own partition. The spread across seeds reflects the seed itself (partition, initialisation, sampling order, augmentation) together with GPU non-determinism; seed 42 ran on Colab (T4) and seeds 7 and 123 on Kaggle (P100), so seed and platform effects cannot be separated."
   }
 }
