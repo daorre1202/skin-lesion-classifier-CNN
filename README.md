@@ -668,6 +668,16 @@ For plain-text citation (e.g. APA):
 
 ---
 
+## Publications
+
+- Ortiz Requena, D. (2026). *Clinically Calibrated Per-Class Decision Thresholds for
+  High-Risk Skin Lesion Classification: A Multi-Seed Study on ISIC 2018*. XLIV Congreso
+  Anual de la Sociedad Española de Ingeniería Biomédica (CASEIB 2026), València.
+  Accepted; DOI pending. Code and results cited in the paper:
+  [tag `v1.1.1`](https://github.com/daorre1202/skin-lesion-classifier-CNN/releases/tag/v1.1.1).
+
+---
+
 ## Acknowledgements
 
 - Dataset: [HAM10000 / ISIC 2018 Challenge Task 3](https://challenge.isic-archive.com/landing/2018/47/), Tschandl et al., 2018
