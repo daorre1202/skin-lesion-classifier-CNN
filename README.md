@@ -32,7 +32,9 @@
 > gain (`scripts/bootstrap_paired.py`) with the seed-42 test probabilities it reads, and corrects
 > the Mahbod et al. row of the comparison table. Tag `v1.1.1` adds the melanoma sensitivity-target
 > sweep (`scripts/threshold_sweep.py`). Tag `v1.1.2` adds [`ERRATA.md`](ERRATA.md), documenting
-> corrections made to the thesis text after deposit. Training code and reported results are
+> corrections made to the thesis text after deposit. Tag `v1.1.3` measures the lesion overlap
+> between the splits of the seed-42 run (`scripts/lesion_overlap_check.py`) and qualifies the
+> statements it affects. Training code and reported results are
 > identical across all tags. To reproduce the results reported in a given publication, use the
 > tag indicated there.
 
@@ -66,6 +68,9 @@ make visualize DIR=outputs/<timestamp>
 
 # Paired bootstrap of the calibration gain (CPU, seconds; uses results/seed_42/)
 python scripts/bootstrap_paired.py
+
+# Results by lesion overlap with train and validation (CPU; uses results/seed_42/)
+python scripts/lesion_overlap_check.py
 ```
 
 ---
@@ -122,7 +127,7 @@ Paired bootstrap over the 2348 test images of the reference run (B = 10,000, `nu
 | Malignant BACC | 0.7748 | 0.8015 | +0.027 [+0.014, +0.039] | 100% |
 | Global BACC | 0.8486 | 0.8546 | +0.006 [+0.0002, +0.012] | 97.8% |
 
-The malignant gain is robust; the global change is marginal. Source: `results/seed_42/bootstrap_summary.json`, reproducible with `python scripts/bootstrap_paired.py`.
+On the full test set the malignant gain is positive and the global change is marginal. On the test images without a lesion-mate in train or validation the malignant gain is smaller and its interval includes zero (see [The split is by image](#the-split-is-by-image)). Source: `results/seed_42/bootstrap_summary.json`, reproducible with `python scripts/bootstrap_paired.py`.
 
 ### Sensitivity to the melanoma target
 
@@ -197,9 +202,10 @@ Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were eval
 > external training data; the extra-data classification of the official-test-set entries follows
 > Shen et al. (2022). Note that the Kitada & Iyatomi figure is measured on the official *validation* set
 > rather than the test set, so it is not directly comparable to the other rows.
-> Restricted to HAM10000 without external data, this work falls within the range achieved by
-> comparable methods. The ±0.009 standard deviation across 3 independent seeds quantifies
-> run-to-run variance.
+> The split of this work is by image, and 39% of its HAM10000 test images share a lesion with
+> train or validation (see [The split is by image](#the-split-is-by-image)), so its figures are
+> likely optimistic and the comparison with official-test-set entries is indicative only.
+> The ±0.009 standard deviation across 3 independent seeds quantifies run-to-run variance.
 
 ---
 
@@ -215,7 +221,7 @@ Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were eval
 - **Clinical threshold calibration**: two-level fallback (strict floor → relaxed floor → argmax)
 - **Checkpoint management**: `RESUME_FROM_CHECKPOINTS`, `FORCE_RETRAIN`, `LOAD_TTA_FROM_DIR` modes
 - **Unit tests**: 46 tests covering split determinism, loss behaviour, clinical threshold logic, early stopping and augmentation correctness, runnable locally with `make test`
-- **Reproducibility**: every source of randomness is seeded via `RNG_SEED`; residual GPU non-determinism is discussed under [Limitations](#limitations-and-discussion)
+- **Reproducibility**: deterministic split for a given seed and fixed Python, NumPy and PyTorch seeds via `RNG_SEED`; albumentations is not seeded by them (see [Reproducibility](#reproducibility)); the saved seed-42 arrays reproduce the calibration figures exactly
 - **Automatic PDF report**: every run generates a complete results report including training curves, confusion matrices, ROC and Precision-Recall curves, Grad-CAM visualisations, clinical threshold reliability analysis, and per-class sensitivity/specificity tables
 
 ---
@@ -240,7 +246,9 @@ Split: 60% train / 20% val / 20% test, stratified by class.
 > **Note on the split.** The partition is performed at the image level, not at the lesion level.
 > HAM10000 contains multiple images of some lesions, so an image of a given lesion in the
 > training set can share that lesion with an image in validation or test, which tends to
-> inflate estimated performance relative to a strictly lesion-level split.
+> inflate estimated performance relative to a strictly lesion-level split. In the seed-42
+> partition, 39% of the HAM10000 test images have a lesion-mate in train or validation; see
+> [The split is by image](#the-split-is-by-image).
 
 > The dataset is not included in this repository. See [Setup](#setup) for download instructions.
 
@@ -420,7 +428,7 @@ KAGGLE_DATASET_SLUG = 'danielortizrequena/isic2018-task3'  # default, change onl
 
 **4.** Enable GPU in Settings → Accelerator → GPU P100. Kaggle sessions allow up to 12 hours. A full training run takes approximately **2.5 hours** on P100, well within the session limit.
 
-> **Colab vs Kaggle:** Kaggle's P100 trains faster; Colab's T4 is more accessible for interactive development. Both use the same batch sizes and produce valid results. The seed-42 reference run used Colab and seeds 7 and 123 used Kaggle, so platform and seed vary together within the ±0.009 cross-seed spread (see [Limitations](#limitations-and-discussion)).
+> **Colab vs Kaggle:** Kaggle's P100 trains faster; Colab's T4 is more accessible for interactive development. Both use the same batch sizes. Kaggle runs use two DataLoader workers and Colab runs none, which matters for TTA (see [Limitations](#limitations-and-discussion)). The seed-42 reference run used Colab and seeds 7 and 123 used Kaggle, so platform and seed vary together within the ±0.009 cross-seed spread (see [Limitations](#limitations-and-discussion)).
 
 ---
 
@@ -518,7 +526,8 @@ skin-lesion-classifier-CNN/
 │   ├── train.py                  # Main entry point
 │   ├── visualize_ensemble.py     # Probability distribution figures
 │   ├── bootstrap_paired.py       # Paired bootstrap of the calibration gain
-│   └── threshold_sweep.py        # MEL sensitivity-target sweep
+│   ├── threshold_sweep.py        # MEL sensitivity-target sweep
+│   └── lesion_overlap_check.py   # Results by lesion overlap with train and validation
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb  ← class distribution, sample images, augmentation demo
 │   └── 02_training_pipeline.ipynb
@@ -531,9 +540,11 @@ skin-lesion-classifier-CNN/
 │   │   ├── tta_val_labels.csv       # Validation ground-truth class indices
 │   │   ├── calibrated_thresholds.json
 │   │   ├── bootstrap_summary.json   # Output of scripts/bootstrap_paired.py
-│   │   └── threshold_sweep.json     # Output of scripts/threshold_sweep.py
+│   │   ├── threshold_sweep.json     # Output of scripts/threshold_sweep.py
+│   │   └── lesion_overlap_summary.json  # Output of scripts/lesion_overlap_check.py
 │   ├── seed_7/results.json          # Metrics for seed 7 robustness run
 │   ├── seed_123/results.json        # Metrics for seed 123 robustness run
+│   ├── lesion_overlap/flags.csv     # Lesion-overlap flags of the seed-42 partition
 │   └── robustness_summary.json      # Aggregated 3-seed analysis
 └── docs/
     ├── pipeline.png
@@ -547,18 +558,33 @@ skin-lesion-classifier-CNN/
 
 ## Limitations and discussion
 
+### The split is by image
+
+HAM10000 holds several images of some lesions, and the split assigns each image to train, validation or test without grouping the images of a lesion. In the partition of the seed-42 reference run, 779 of the 1,991 HAM10000 test images (39%) have another image of the same lesion in train or validation, and 577 of the 2,000 HAM10000 validation images (29%) have one in train. The 357 test images from the official ISIC 2018 validation and test sets carry no lesion identifier and were not checked, and the partitions of seeds 7 and 123 were not checked either. The flags per image are in `results/lesion_overlap/flags.csv`, taken from [skin-lesion-foundation-models](https://github.com/daorre1202/skin-lesion-foundation-models), which uses the same seed-42 partition. `python scripts/lesion_overlap_check.py` recomputes the table from the seed-42 run and writes `results/seed_42/lesion_overlap_summary.json`.
+
+| Test images | n | BACC, TTA ensemble | BACC with thresholds | Malignant BACC, argmax to thresholds |
+|---|---|---|---|---|
+| All | 2,348 | 0.8486 | 0.8546 | 0.7748 to 0.8015 |
+| No lesion-mate in train or validation | 1,212 | 0.8022 | 0.8043 | 0.7143 to 0.7277 |
+| Lesion-mate in train or validation | 779 | 0.8723 | 0.8770 | 0.8078 to 0.8407 |
+| No lesion identifier | 357 | 0.8736 | 0.8774 | 0.8326 to 0.8596 |
+
+On the images without lesion-mate the 95% bootstrap interval of the BACC is 0.742 to 0.859 with argmax and 0.744 to 0.861 with thresholds. The gain of the thresholds on malignant BACC is +0.0267 on all images (+0.0143 to +0.0393) and +0.0134 on the images without lesion-mate (-0.0132 to +0.0389), an interval that includes zero. That group is small (62 MEL, 41 BCC, 35 AKIEC, 9 DF and 11 VASC test images) and differs in composition from the rest, so the comparison is indicative. The other figures of this README refer to the full test set and are unchanged.
+
 ### Why BACC varies across seeds (±0.009)
 
 All three seeds use identical hyperparameters, and each seed produces its own train/val/test
-partition with the same deterministic split algorithm — the partitions are not identical
+partition with the same deterministic split algorithm, so the partitions are not identical
 across seeds. The variance reflects the seed itself, which fixes that partition, the
-classification-head initialisation, the sampling order and the augmentation draws, together
+classification-head initialisation and the sampling order, together
 with hardware-level non-determinism: the runs were executed on Colab (T4) and Kaggle (P100),
 and differences in memory bandwidth and CUDA kernel scheduling affect floating-point
 accumulation order. Seed and platform vary together across the three runs, so their
 contributions cannot be separated with this design; isolating them would require repeating
 each seed on both platforms. Either way, the magnitude is consistent with the spread reported
 in the literature for similar architectures.
+
+Two further differences matter. Albumentations is not seeded by `RNG_SEED` (see [Reproducibility](#reproducibility)), so the training augmentations and the TTA views differ between runs. And the Kaggle runs (seeds 7 and 123) used two DataLoader workers while the Colab run (seed 42) used none: with albumentations 2.0.8, a DataLoader with two workers draws the same random augmentations on every pass ([check](https://github.com/daorre1202/skin-lesion-foundation-models/blob/main/scripts/check_dataloader_rng.py)), so the ten TTA rounds of seeds 7 and 123 probably repeated the same views. The effect on their figures was not measured.
 
 ### Why MEL sensitivity does not always reach ≥0.85
 
@@ -584,10 +610,10 @@ by design:
 - **Patient metadata**: age, sex or anatomical location, in some of them
 - **Larger ensembles** than the three models used here
 
-This work uses only the challenge images, with no external data or metadata, and falls
-within the range of methods under the same restriction. The comparison is not strictly
-matched, because this work evaluates on its own stratified split rather than the official
-test set.
+This work uses only the challenge images, with no external data or metadata. Its figures
+cannot be placed directly against those methods: it evaluates on its own stratified split
+rather than the official test set, and that split shares lesions between test and training
+(see [The split is by image](#the-split-is-by-image)), which makes them optimistic.
 
 ### Clinical scope and dataset bias
 
@@ -621,7 +647,7 @@ medical AI fairness.
 
 ## Reproducibility
 
-Fixed random seeds are applied across all sources of stochasticity:
+Fixed random seeds are applied to Python, NumPy and PyTorch:
 
 ```python
 random.seed(seed); np.random.seed(seed)
@@ -632,7 +658,17 @@ torch.backends.cudnn.benchmark = False
 
 The dataset split is fully deterministic for a given seed: image IDs are sorted lexicographically before shuffling, and classes are iterated alphabetically. A `split_assignment.json` is saved with every run to guarantee that resuming a run uses the exact same train/val/test partition as that run's original execution. Different seeds produce different partitions by design; see [Limitations](#limitations-and-discussion).
 
-> **Note on hardware variability:** Results may vary slightly across GPU hardware even with a fixed seed, due to CuDNN kernel non-determinism. See [*Limitations: Why BACC varies across seeds*](#limitations-and-discussion) for a detailed explanation. The robustness analysis across 3 seeds quantifies this variance at ±0.009 BACC.
+Albumentations keeps its own random generator, which these seeds do not control. With albumentations 1.4.24 and 2.0.8, two runs of the snippet below print different values, so the training augmentations and the TTA views differ between runs even with the same seed. The saved arrays in `results/seed_42/` reproduce the reported calibration figures exactly.
+
+```python
+import random, numpy as np, albumentations as A
+random.seed(42); np.random.seed(42)
+t = A.Compose([A.HorizontalFlip(p=0.5), A.VerticalFlip(p=0.5)])
+img = np.arange(48, dtype=np.uint8).reshape(4, 4, 3)
+print([int(t(image=img)['image'].sum(axis=2)[0, 0]) for _ in range(8)])
+```
+
+> **Note on hardware variability:** Results may vary slightly across GPU hardware even with a fixed seed, due to CuDNN kernel non-determinism and to the unseeded augmentations described above. See [*Limitations: Why BACC varies across seeds*](#limitations-and-discussion) for a detailed explanation. The robustness analysis across 3 seeds quantifies this variance at ±0.009 BACC.
 
 ---
 

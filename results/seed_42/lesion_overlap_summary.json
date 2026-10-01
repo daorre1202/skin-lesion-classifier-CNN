@@ -1,0 +1,58 @@
+{
+  "test_with_lesion_id": 1991,
+  "test_with_lesion_mate": 779,
+  "groups": {
+    "all": {
+      "n": 2348,
+      "bacc_argmax": 0.8485985513973036,
+      "bacc_thresholds": 0.8545981089593978,
+      "malignant_argmax": 0.7748165397820571,
+      "malignant_thresholds": 0.8015240749033853,
+      "bacc_argmax_ci": [
+        0.8215079858081059,
+        0.874695255317988
+      ],
+      "bacc_thresholds_ci": [
+        0.8271267636658407,
+        0.8806127725677253
+      ],
+      "malignant_gain_ci": [
+        0.014270303205299406,
+        0.03929199463097294
+      ]
+    },
+    "no_lesion_mate": {
+      "n": 1212,
+      "bacc_argmax": 0.8022452688436826,
+      "bacc_thresholds": 0.8043430901868774,
+      "malignant_argmax": 0.7143419130043837,
+      "malignant_thresholds": 0.7277172080476566,
+      "bacc_argmax_ci": [
+        0.7423137004174477,
+        0.8593212426541683
+      ],
+      "bacc_thresholds_ci": [
+        0.7444145334424629,
+        0.8611623900873441
+      ],
+      "malignant_gain_ci": [
+        -0.013227513227513366,
+        0.03888888888888897
+      ]
+    },
+    "lesion_mate": {
+      "n": 779,
+      "bacc_argmax": 0.8722892004176942,
+      "bacc_thresholds": 0.8769710600510922,
+      "malignant_argmax": 0.8077584312086928,
+      "malignant_thresholds": 0.8406802419082812
+    },
+    "no_lesion_id": {
+      "n": 357,
+      "bacc_argmax": 0.8735688257427388,
+      "bacc_thresholds": 0.8774317796056926,
+      "malignant_argmax": 0.8326033543424848,
+      "malignant_thresholds": 0.8596303813695118
+    }
+  }
+}
