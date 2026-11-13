@@ -1,0 +1,20 @@
+{
+  "individual_test_bacc": {
+    "resnet50_guiado": 0.7478067078846047,
+    "densenet121_baseline": 0.8016532348886655,
+    "efficientnet_b3_baseline": 0.8006603576597604
+  },
+  "val_bacc_used_for_weights": {
+    "resnet50_guiado": 0.7787597648684625,
+    "densenet121": 0.8055,
+    "efficientnet_b3": 0.7907
+  },
+  "weights": {
+    "resnet50_guiado": 0.3279044034295858,
+    "densenet121": 0.3391636405447116,
+    "efficientnet_b3": 0.33293195602570264
+  },
+  "ensemble_test_bacc": 0.8206607699434288,
+  "ensemble_baseline_test_bacc": 0.8315,
+  "diff": -0.01083923005657117
+}

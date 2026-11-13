@@ -1,0 +1,16 @@
+{
+  "tta_rounds": 10,
+  "individual_tta_bacc": {
+    "resnet50_guiado": 0.7732555023403448,
+    "densenet121_baseline": 0.8025141324289248,
+    "efficientnet_b3_baseline": 0.8055283579196038
+  },
+  "weights": {
+    "resnet50_guiado": 0.33164621262006405,
+    "densenet121": 0.3372753888826829,
+    "efficientnet_b3": 0.33107839849725307
+  },
+  "tta_ensemble_bacc": 0.831358334373703,
+  "tta_ensemble_baseline_bacc": 0.8486,
+  "diff": -0.01724166562629703
+}

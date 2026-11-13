@@ -1,0 +1,343 @@
+{
+  "generated_at": "2026-09-17T14:21:55.557092",
+  "reference_baseline": {
+    "resnet50_test_bacc": 0.8135,
+    "ensemble_test_bacc": 0.8315,
+    "tta_ensemble_test_bacc": 0.8486,
+    "clinical_test_bacc": 0.8546
+  },
+  "reference_cam_protocol": {
+    "checkpoint": "/content/drive/MyDrive/ISIC2018_Task3/colab/resnet50_best.pth",
+    "test_bacc": 0.8134867711640782,
+    "n_masked": 1991,
+    "ep_global": 0.46194399979703654,
+    "ep_per_class": {
+      "MEL": 0.5977326384911846,
+      "NV": 0.3914601612181812,
+      "BCC": 0.5999821185992629,
+      "AKIEC": 0.7001649344509299,
+      "BKL": 0.5973316786943802,
+      "DF": 0.7345712128139678,
+      "VASC": 0.359305584946504
+    },
+    "ep_malignant": 0.6155642163084478,
+    "ep_benign": 0.42428350894495825,
+    "ep_correct": 0.45122407477646265,
+    "n_correct": 1761,
+    "ep_incorrect": 0.5440213387589092,
+    "n_incorrect": 230,
+    "ep_protocol": "cam_layer4_7x7_softmask_predclass"
+  },
+  "ep_protocol_note": "EP values in this file are CAM-based (layer4, 7x7, soft mask, predicted class). They are not comparable with the Grad-CAM audit (layer4[-1].conv3, 224x224, binary mask).",
+  "runs": [
+    {
+      "run_name": "crop0_attn1_w0.5_seed42",
+      "dir": "/content/drive/MyDrive/ISIC2018_Task3/colab_gradcam_guided_experimento/crop0_attn1_w0.5_seed42",
+      "meta": {
+        "run_name": "crop0_attn1_w0.5_seed42",
+        "val_bacc": 0.7934685467160139,
+        "val_loss": 0.46323024631055576,
+        "best_epoch": 19,
+        "seed": 42,
+        "use_mask_crop": false,
+        "use_attention_loss": true,
+        "attention_loss_weight": 0.5,
+        "crop_margin_frac": 0.2,
+        "img_size": 224,
+        "batch_size": 32,
+        "lr": 0.0001,
+        "weight_decay": 0.0001,
+        "focal_gamma": 1.0,
+        "label_smoothing": 0.1,
+        "max_epochs": 35,
+        "es_patience": 10,
+        "es_min_delta": 0.001,
+        "es_bacc_weight": 0.85,
+        "sched_patience": 4,
+        "sched_factor": 0.5,
+        "aug_thr_light": 2.0,
+        "aug_thr_medium": 6.0,
+        "aug_thr_heavy": 15.0,
+        "clinical_aug_boost": {
+          "MEL": 2
+        }
+      },
+      "test_eval": {
+        "run_name": "crop0_attn1_w0.5_seed42",
+        "seed": 42,
+        "config": {
+          "use_mask_crop": false,
+          "use_attention_loss": true,
+          "attention_loss_weight": 0.5
+        },
+        "test_bacc": 0.7502064019891698,
+        "test_bacc_baseline": 0.8135,
+        "test_bacc_diff": -0.06329359801083023,
+        "ep_global": 0.7594263219072973,
+        "ep_per_class": {
+          "MEL": 0.8271597685026271,
+          "NV": 0.7437187650027763,
+          "BCC": 0.8065119286378225,
+          "AKIEC": 0.7267396793220983,
+          "BKL": 0.7481564888730645,
+          "DF": 0.8077932652972993,
+          "VASC": 0.9344519697702848
+        },
+        "ep_malignant": 0.8048796522982267,
+        "ep_benign": 0.7482832915675574,
+        "ep_correct": 0.7703502057304348,
+        "ep_incorrect": 0.7028053215942027,
+        "ep_baseline_global": 0.5069,
+        "ep_baseline_malignant": 0.6321,
+        "ep_baseline_benign": 0.4762
+      },
+      "_has_data": true
+    },
+    {
+      "run_name": "crop1_attn0_w0_seed42",
+      "dir": "/content/drive/MyDrive/ISIC2018_Task3/colab_gradcam_guided_experimento/crop1_attn0_w0_seed42",
+      "meta": {
+        "run_name": "crop1_attn0_w0_seed42",
+        "val_bacc": 0.7802866394491655,
+        "val_loss": 0.4505301410830194,
+        "best_epoch": 19,
+        "seed": 42,
+        "use_mask_crop": true,
+        "use_attention_loss": false,
+        "attention_loss_weight": 0.5,
+        "crop_margin_frac": 0.2,
+        "img_size": 224,
+        "batch_size": 32,
+        "lr": 0.0001,
+        "weight_decay": 0.0001,
+        "focal_gamma": 1.0,
+        "label_smoothing": 0.1,
+        "max_epochs": 35,
+        "es_patience": 10,
+        "es_min_delta": 0.001,
+        "es_bacc_weight": 0.85,
+        "sched_patience": 4,
+        "sched_factor": 0.5,
+        "aug_thr_light": 2.0,
+        "aug_thr_medium": 6.0,
+        "aug_thr_heavy": 15.0,
+        "clinical_aug_boost": {
+          "MEL": 2
+        }
+      },
+      "test_eval": {
+        "run_name": "crop1_attn0_w0_seed42",
+        "seed": 42,
+        "config": {
+          "use_mask_crop": true,
+          "use_attention_loss": false,
+          "attention_loss_weight": 0.5
+        },
+        "test_bacc": 0.7765699167389198,
+        "test_bacc_baseline": 0.8135,
+        "test_bacc_diff": -0.03693008326108016,
+        "ep_global": 0.47413922757488486,
+        "ep_per_class": {
+          "MEL": 0.5885293362994811,
+          "NV": 0.4221292586670347,
+          "BCC": 0.5767691253191408,
+          "AKIEC": 0.6468277523914973,
+          "BKL": 0.5611025405315948,
+          "DF": 0.7462134545757657,
+          "VASC": 0.33517081519732106
+        },
+        "ep_malignant": 0.595284831049681,
+        "ep_benign": 0.44443999270176404,
+        "ep_correct": 0.4677882582938902,
+        "ep_incorrect": 0.5100784918673361,
+        "ep_baseline_global": 0.5069,
+        "ep_baseline_malignant": 0.6321,
+        "ep_baseline_benign": 0.4762
+      },
+      "_has_data": true
+    },
+    {
+      "run_name": "crop1_attn1_w0.2_seed42",
+      "dir": "/content/drive/MyDrive/ISIC2018_Task3/colab_gradcam_guided_experimento/crop1_attn1_w0.2_seed42",
+      "meta": {
+        "run_name": "crop1_attn1_w0.2_seed42",
+        "val_bacc": 0.7787597648684625,
+        "val_loss": 0.4655647710996444,
+        "best_epoch": 30,
+        "seed": 42,
+        "use_mask_crop": true,
+        "use_attention_loss": true,
+        "attention_loss_weight": 0.2,
+        "crop_margin_frac": 0.2,
+        "img_size": 224,
+        "batch_size": 32,
+        "lr": 0.0001,
+        "weight_decay": 0.0001,
+        "focal_gamma": 1.0,
+        "label_smoothing": 0.1,
+        "max_epochs": 35,
+        "es_patience": 10,
+        "es_min_delta": 0.001,
+        "es_bacc_weight": 0.85,
+        "sched_patience": 4,
+        "sched_factor": 0.5,
+        "aug_thr_light": 2.0,
+        "aug_thr_medium": 6.0,
+        "aug_thr_heavy": 15.0,
+        "clinical_aug_boost": {
+          "MEL": 2
+        }
+      },
+      "test_eval": {
+        "run_name": "crop1_attn1_w0.2_seed42",
+        "seed": 42,
+        "config": {
+          "use_mask_crop": true,
+          "use_attention_loss": true,
+          "attention_loss_weight": 0.2
+        },
+        "test_bacc": 0.7478067078846047,
+        "test_bacc_baseline": 0.8135,
+        "test_bacc_diff": -0.06569329211539532,
+        "ep_global": 0.8856822449797208,
+        "ep_per_class": {
+          "MEL": 0.916671106051321,
+          "NV": 0.8808552380181367,
+          "BCC": 0.8785882670359284,
+          "AKIEC": 0.9434689274339965,
+          "BKL": 0.8847167203202844,
+          "DF": 0.9482743768464952,
+          "VASC": 0.7041540845082357
+        },
+        "ep_malignant": 0.9112736739892968,
+        "ep_benign": 0.8794084237340961,
+        "ep_correct": 0.8944110411063623,
+        "ep_incorrect": 0.8336451911478193,
+        "ep_baseline_global": 0.5069,
+        "ep_baseline_malignant": 0.6321,
+        "ep_baseline_benign": 0.4762
+      },
+      "ensemble_ligero": {
+        "individual_test_bacc": {
+          "resnet50_guiado": 0.7478067078846047,
+          "densenet121_baseline": 0.8016532348886655,
+          "efficientnet_b3_baseline": 0.8006603576597604
+        },
+        "val_bacc_used_for_weights": {
+          "resnet50_guiado": 0.7787597648684625,
+          "densenet121": 0.8055,
+          "efficientnet_b3": 0.7907
+        },
+        "weights": {
+          "resnet50_guiado": 0.3279044034295858,
+          "densenet121": 0.3391636405447116,
+          "efficientnet_b3": 0.33293195602570264
+        },
+        "ensemble_test_bacc": 0.8206607699434288,
+        "ensemble_baseline_test_bacc": 0.8315,
+        "diff": -0.01083923005657117
+      },
+      "_has_data": true
+    },
+    {
+      "run_name": "crop1_attn1_w0.5_seed42",
+      "dir": "/content/drive/MyDrive/ISIC2018_Task3/colab_gradcam_guided_experimento/crop1_attn1_w0.5_seed42",
+      "meta": {
+        "run_name": "crop1_attn1_w0.5_seed42",
+        "val_bacc": 0.7920560855342555,
+        "val_loss": 0.4644173421888246,
+        "best_epoch": 19,
+        "seed": 42,
+        "use_mask_crop": true,
+        "use_attention_loss": true,
+        "attention_loss_weight": 0.5,
+        "crop_margin_frac": 0.2,
+        "img_size": 224,
+        "batch_size": 32,
+        "lr": 0.0001,
+        "weight_decay": 0.0001,
+        "focal_gamma": 1.0,
+        "label_smoothing": 0.1,
+        "max_epochs": 35,
+        "es_patience": 10,
+        "es_min_delta": 0.001,
+        "es_bacc_weight": 0.85,
+        "sched_patience": 4,
+        "sched_factor": 0.5,
+        "aug_thr_light": 2.0,
+        "aug_thr_medium": 6.0,
+        "aug_thr_heavy": 15.0,
+        "clinical_aug_boost": {
+          "MEL": 2
+        }
+      },
+      "test_eval": {
+        "run_name": "crop1_attn1_w0.5_seed42",
+        "seed": 42,
+        "config": {
+          "use_mask_crop": true,
+          "use_attention_loss": true,
+          "attention_loss_weight": 0.5
+        },
+        "test_bacc": 0.790419320682634,
+        "test_bacc_baseline": 0.8135,
+        "test_bacc_diff": -0.023080679317366015,
+        "ep_global": 0.9105423321635923,
+        "ep_per_class": {
+          "MEL": 0.9397776684324656,
+          "NV": 0.9070060503534434,
+          "BCC": 0.915803611205489,
+          "AKIEC": 0.9450294427347906,
+          "BKL": 0.9087614823531892,
+          "DF": 0.945091982682546,
+          "VASC": 0.7185436727908942
+        },
+        "ep_malignant": 0.9344237481947152,
+        "ep_benign": 0.904687726107182,
+        "ep_correct": 0.9169662152403316,
+        "ep_incorrect": 0.8728629352203731,
+        "ep_baseline_global": 0.5069,
+        "ep_baseline_malignant": 0.6321,
+        "ep_baseline_benign": 0.4762
+      },
+      "ensemble_ligero": {
+        "individual_test_bacc": {
+          "resnet50_guiado": 0.790419320682634,
+          "densenet121_baseline": 0.8016532348886655,
+          "efficientnet_b3_baseline": 0.8006603576597604
+        },
+        "val_bacc_used_for_weights": {
+          "resnet50_guiado": 0.7920560855342555,
+          "densenet121": 0.8055,
+          "efficientnet_b3": 0.7907
+        },
+        "weights": {
+          "resnet50_guiado": 0.33164621262006405,
+          "densenet121": 0.3372753888826829,
+          "efficientnet_b3": 0.33107839849725307
+        },
+        "ensemble_test_bacc": 0.8319148551538402,
+        "ensemble_baseline_test_bacc": 0.8315,
+        "diff": 0.0004148551538402101
+      },
+      "tta_ensemble": {
+        "tta_rounds": 10,
+        "individual_tta_bacc": {
+          "resnet50_guiado": 0.7732555023403448,
+          "densenet121_baseline": 0.8025141324289248,
+          "efficientnet_b3_baseline": 0.8055283579196038
+        },
+        "weights": {
+          "resnet50_guiado": 0.33164621262006405,
+          "densenet121": 0.3372753888826829,
+          "efficientnet_b3": 0.33107839849725307
+        },
+        "tta_ensemble_bacc": 0.831358334373703,
+        "tta_ensemble_baseline_bacc": 0.8486,
+        "diff": -0.01724166562629703
+      },
+      "_has_data": true
+    }
+  ],
+  "skipped_runs": []
+}

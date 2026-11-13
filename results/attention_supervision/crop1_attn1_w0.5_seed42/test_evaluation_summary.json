@@ -1,0 +1,29 @@
+{
+  "run_name": "crop1_attn1_w0.5_seed42",
+  "seed": 42,
+  "config": {
+    "use_mask_crop": true,
+    "use_attention_loss": true,
+    "attention_loss_weight": 0.5
+  },
+  "test_bacc": 0.790419320682634,
+  "test_bacc_baseline": 0.8135,
+  "test_bacc_diff": -0.023080679317366015,
+  "ep_global": 0.9105423321635923,
+  "ep_per_class": {
+    "MEL": 0.9397776684324656,
+    "NV": 0.9070060503534434,
+    "BCC": 0.915803611205489,
+    "AKIEC": 0.9450294427347906,
+    "BKL": 0.9087614823531892,
+    "DF": 0.945091982682546,
+    "VASC": 0.7185436727908942
+  },
+  "ep_malignant": 0.9344237481947152,
+  "ep_benign": 0.904687726107182,
+  "ep_correct": 0.9169662152403316,
+  "ep_incorrect": 0.8728629352203731,
+  "ep_baseline_global": 0.5069,
+  "ep_baseline_malignant": 0.6321,
+  "ep_baseline_benign": 0.4762
+}

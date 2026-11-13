@@ -13,7 +13,7 @@
 ![Release](https://img.shields.io/github/v/release/daorre1202/skin-lesion-classifier-CNN?style=flat)
 
 **Automated dermoscopy image classification for 7 skin lesion types**  
-*Weighted CNN Ensemble · Test-Time Augmentation · Clinical Threshold Calibration · Grad-CAM · ISIC 2018 Task 3*
+*Weighted CNN Ensemble · Test-Time Augmentation · Clinical Threshold Calibration · Grad-CAM validated against expert lesion masks · ISIC 2018 Task 3*
 
 </div>
 
@@ -34,8 +34,10 @@
 > sweep (`scripts/threshold_sweep.py`). Tag `v1.1.2` adds [`ERRATA.md`](ERRATA.md), documenting
 > corrections made to the thesis text after deposit. Tag `v1.1.3` measures the lesion overlap
 > between the splits of the seed-42 run (`scripts/lesion_overlap_check.py`) and qualifies the
-> statements it affects. Training code and reported results are
-> identical across all tags. To reproduce the results reported in a given publication, use the
+> statements it affects. Tag `v1.2` adds the attention validation against expert lesion masks
+> of the BIOIMAGING 2027 paper: notebooks 03 to 05, the attention-supervision control,
+> `scripts/attention_stats.py`, the figure scripts and their result files. Training code and
+> reported results are identical across all tags. To reproduce the results reported in a given publication, use the
 > tag indicated there.
 
 ---
@@ -71,6 +73,9 @@ python scripts/bootstrap_paired.py
 
 # Results by lesion overlap with train and validation (CPU; uses results/seed_42/)
 python scripts/lesion_overlap_check.py
+
+# Statistics of the attention validation (CPU, seconds; uses results/attention/ and results/seed_42/)
+python scripts/attention_stats.py
 ```
 
 ---
@@ -79,7 +84,7 @@ python scripts/lesion_overlap_check.py
 
 This project implements an end-to-end deep learning pipeline for the automated classification of dermoscopic skin lesion images, addressing the **ISIC 2018 Challenge Task 3** (HAM10000 dataset, 11,720 images across all splits, 7 classes). The system is designed with clinical deployment constraints in mind: beyond optimising global accuracy, it incorporates class-specific probability threshold calibration to meet clinically meaningful sensitivity targets for malignant lesions. This is the distinction that separates clinically useful systems from academically accurate ones.
 
-The pipeline combines three pretrained CNN architectures into a **weighted ensemble**, applies **Test-Time Augmentation (TTA)** at inference, and uses **Grad-CAM** visualisations to provide interpretability for clinical validation. A robustness analysis across three independent random seeds (42, 7, 123) on two cloud GPU platforms (Google Colab T4, Kaggle P100) gives a standard deviation of ±0.009 BACC, in line with the spread reported for similar ensembles in the literature.
+The pipeline combines three pretrained CNN architectures into a **weighted ensemble**, applies **Test-Time Augmentation (TTA)** at inference, and uses **Grad-CAM** to show where the models look, validated over the whole test set against expert lesion masks (see [Attention validation](#attention-validation-against-expert-lesion-masks)). A robustness analysis across three independent random seeds (42, 7, 123) on two cloud GPU platforms (Google Colab T4, Kaggle P100) gives a standard deviation of ±0.009 BACC, in line with the spread reported for similar ensembles in the literature.
 
 ### Key results
 
@@ -218,6 +223,7 @@ Balanced accuracy reported for ISIC 2018 Task 3. Challenge submissions were eval
 - **Mixed early stopping score**: `w·BACC + (1−w)·1/(1+loss)` to reduce noise from oscillating validation
 - **Test-Time Augmentation**: 10-round geometric augmentation ensemble at inference
 - **Grad-CAM**: visualisation of attended regions for the individual model with the highest validation BACC
+- **Attention validation**: Grad-CAM energy inside expert lesion masks over 1991 test images, for three backbones, the ensemble and three training seeds, with effect sizes and a lesion-size control
 - **Clinical threshold calibration**: two-level fallback (strict floor → relaxed floor → argmax)
 - **Checkpoint management**: `RESUME_FROM_CHECKPOINTS`, `FORCE_RETRAIN`, `LOAD_TTA_FROM_DIR` modes
 - **Unit tests**: 46 tests covering split determinism, loss behaviour, clinical threshold logic, early stopping and augmentation correctness, runnable locally with `make test`
@@ -453,7 +459,96 @@ KAGGLE_DATASET_SLUG = 'danielortizrequena/isic2018-task3'  # default, change onl
 
 ![Grad-CAM](docs/results_gradcam.png)
 
-> Grad-CAM heatmaps for ResNet-50 on one true positive per class. Red regions indicate the areas with the strongest influence on the prediction. In all cases the model attends to the lesion rather than background or dermatoscope artefacts, which is a key requirement for clinical plausibility.
+> Grad-CAM heatmaps for ResNet-50 on one true positive per class. Red regions indicate the areas with the strongest influence on the prediction. In these examples the activation lies on the lesion rather than on the background or dermatoscope artefacts; the next section measures this over the whole test set.
+
+### Attention validation against expert lesion masks
+
+This analysis is the subject of the BIOIMAGING 2027 paper listed under [Publications](#publications); its code and results are in tag `v1.2`.
+
+Grad-CAM of the reference ResNet-50 (seed 42, last convolution of the final bottleneck, predicted class) is compared with the HAM10000 lesion segmentations (Tschandl et al., 2019) on the 1991 test images that have a mask (84.8% of the test set). EP (energy proportion) is the fraction of Grad-CAM energy inside the lesion; PG (pointing) is the fraction of images whose activation peak falls inside the lesion.
+
+| Class | n | EP | PG | IoU@0.5 |
+|---|---|---|---|---|
+| MEL | 224 | 0.618 | 0.893 | 0.449 |
+| NV | 1328 | 0.450 | 0.778 | 0.413 |
+| BCC | 102 | 0.597 | 0.922 | 0.459 |
+| AKIEC | 66 | 0.735 | 0.970 | 0.435 |
+| BKL | 224 | 0.618 | 0.911 | 0.453 |
+| DF | 21 | 0.753 | 1.000 | 0.449 |
+| VASC | 26 | 0.373 | 0.846 | 0.475 |
+| **Malignant** | 392 | **0.632** | **0.913** | – |
+| **Benign** | 1599 | **0.476** | **0.801** | – |
+| Overall | 1991 | 0.507 | – | – |
+
+<p align="center"><img src="docs/attention_energy.png" width="460" alt="Energy proportion by class"></p>
+
+Attention concentrates more on the lesion for malignant than for benign classes (rank-biserial r = 0.37, 95% bootstrap interval 0.31 to 0.43). EP grows with lesion size (Spearman ρ = 0.93 with the mask fraction), and malignant lesions are larger (median mask fraction 0.29 against 0.21). The ordering survives a size control: malignant cases keep the higher EP within every quintile of mask fraction (r between 0.26 and 0.62, p < 0.002), and EP divided by the mask fraction gives the same ordering with a smaller effect (2.52 against 2.33, r = 0.14, p < 0.001). The low EP of VASC reflects small lesions: its size-normalised value is the highest of all classes.
+
+**Correct vs misclassified.** Pooled over all classes, EP is higher on errors (0.560, n = 230) than on correct predictions (0.500, n = 1761; U = 173609, p = 0.0004, r = 0.14), but this aggregate mixes classes whose overlap and error rates differ widely. Within classes the direction differs:
+
+| Class | Correct (n, EP) | Misclassified (n, EP) | r | p (Mann-Whitney) |
+|---|---|---|---|---|
+| MEL | 144, 0.690 | 80, 0.488 | −0.48 | < 0.001 * |
+| NV | 1258, 0.441 | 70, 0.608 | 0.41 | < 0.001 * |
+| AKIEC | 46, 0.772 | 20, 0.647 | −0.31 | 0.047 |
+| DF | 15, 0.819 | 6, 0.588 | −0.67 | 0.018 |
+| BCC | 87, 0.604 | 15, 0.557 | −0.08 | 0.62 |
+| BKL | 186, 0.625 | 38, 0.583 | −0.05 | 0.64 |
+
+\* Significant after Bonferroni correction over six classes (α = 0.0083). VASC has a single error and is not tested. r is the rank-biserial correlation of misclassified against correct.
+
+Missed melanomas carry clearly less lesion-focused attention than detected ones, whereas misclassified nevi (mostly predicted as MEL) carry more, so a pooled comparison hides two different failure modes. With errors defined by the calibrated system (TTA ensemble with clinical thresholds), missed melanomas again carry less attention (0.464, n = 40, against 0.651, n = 184; r = −0.42, p < 0.001) and the nevus difference keeps its direction with a smaller effect (r = 0.15, p = 0.008).
+
+<p align="center"><img src="docs/attention_errors.png" width="520" alt="Two misclassified cases"></p>
+
+> Two misclassified cases selected for their high EP (0.959 and 0.934): green is the expert lesion boundary, red the Grad-CAM contour at 0.5. The attention lies on the lesion even though the class is wrong.
+
+<p align="center"><img src="docs/attention_panel.png" width="360" alt="One correct case per class"></p>
+
+> One correctly classified case per class, the first by image identifier rather than a selected example.
+
+**Across backbones and seeds.** Grad-CAM was also computed at the block output of ResNet-50, DenseNet-121 and EfficientNet-B3 (each for its own predicted class), and for the ensemble by combining the three block-output maps with the validation weights of the ensemble, for the class of the calibrated system and without TTA. ResNet-50 was also retrained on the same split with seeds 7 and 123 (test BACC 0.7858 and 0.7962). r is the rank-biserial correlation for malignant against benign (r_mal), missed against detected MEL (r_MEL) and misclassified against correct NV (r_NV).
+
+| Map | EP malignant | EP benign | r_mal | r_MEL | r_NV |
+|---|---|---|---|---|---|
+| ResNet-50 (reference map) | 0.632 | 0.476 | 0.370 | −0.483 | 0.412 |
+| ResNet-50, block output | 0.605 | 0.436 | 0.414 | −0.460 | 0.466 |
+| DenseNet-121 | 0.563 | 0.407 | 0.401 | −0.545 | 0.315 |
+| EfficientNet-B3 | 0.818 | 0.731 | 0.330 | −0.678 | 0.396 |
+| Ensemble | 0.620 | 0.475 | 0.384 | −0.489 | 0.347 |
+| Seed 7 (reference map) | 0.628 | 0.537 | 0.236 | −0.264 | −0.023 |
+| Seed 123 (reference map) | 0.640 | 0.501 | 0.339 | −0.604 | 0.381 |
+
+All p < 0.003 except r_NV for seed 7 (p = 0.63). The ordering by malignancy and the lower overlap of missed melanomas hold in every map and seed. The higher overlap of misclassified nevi holds for every backbone and for seed 123 and is not observed for seed 7, although it reappears at the block output of that seed. The energy proportions of the retrained runs correlate with those of the reference run image by image (Spearman ρ = 0.925 and 0.955). Absolute EP values differ between architectures and are comparable only within a map.
+
+**Images without a shared lesion.** On the 1212 test images that share no lesion with a training or validation image (see [The split is by image](#the-split-is-by-image)), the ordering by malignancy (r = 0.47) and both error differences (r = −0.51 for melanoma and 0.39 for nevi) hold, and across the backbone maps r ranges from 0.332 to 0.515, from −0.656 to −0.504 and from 0.378 to 0.441 respectively.
+
+> EP measures the spatial association between attention and lesion. It does not show that a prediction depends on the lesion region; that would need perturbation tests that occlude the lesion or the background.
+
+**Attention supervision control.** ResNet-50 retrained with a mask-guided crop and/or an auxiliary loss on the class activation map (CAM). These runs follow the training recipe of the reference model except for the JPEG-compression augmentation of the rarest classes. Overlap here is measured on that same CAM at feature-map resolution (7 × 7, soft mask), so it is not comparable with the Grad-CAM values above; the unmodified model is re-evaluated under the same protocol. One seed (42); reported as a control.
+
+| Configuration | Crop | λ | Test BACC | EP (CAM) |
+|---|---|---|---|---|
+| Reference (unmodified) | – | – | 0.8135 | 0.462 |
+| Crop only | yes | – | 0.7766 | 0.474 |
+| Attention loss only | – | 0.5 | 0.7502 | 0.759 |
+| Crop + attention loss | yes | 0.2 | 0.7478 | 0.886 |
+| Crop + attention loss | yes | 0.5 | 0.7904 | 0.911 |
+
+The attention loss raises overlap sharply and every configuration loses balanced accuracy; the best one in the full system (ensemble + TTA) reaches 0.8314 against 0.8486. Overlap and discriminative quality do not move together, so the mechanism is not part of the pipeline.
+
+**Where everything is.**
+
+| What | Code | Results |
+|---|---|---|
+| Audit of the reference ResNet-50 (EP, PG, IoU, figures) | `notebooks/03_attention_audit.ipynb` | `results/attention/gradcam_segmentation_overlap.json` (per-image records) |
+| Effect sizes, size control, calibrated-system errors, images without a shared lesion | `scripts/attention_stats.py` (CPU, seconds) | `results/attention/attention_stats.json` |
+| Backbones and ensemble | `notebooks/04_attention_backbones.ipynb` | `results/attention_backbones/` |
+| Seeds 7 and 123 | `notebooks/05_attention_seeds.ipynb` | `results/attention_seeds/` |
+| Attention supervision control | `experiments/attention_supervision/attention_supervision.ipynb` | `results/attention_supervision/` |
+| Figures 1 and 2 of the paper | `scripts/figures/make_fig1.py`, `scripts/figures/make_fig2.py` | – |
+
+The notebooks run on Google Colab (T4 GPU) and need the seed-42 checkpoints and the HAM10000 segmentation masks, which are not redistributed here; the result files above are their outputs.
 
 ### Per-class metrics (seed 42, reference run)
 
@@ -527,10 +622,19 @@ skin-lesion-classifier-CNN/
 │   ├── visualize_ensemble.py     # Probability distribution figures
 │   ├── bootstrap_paired.py       # Paired bootstrap of the calibration gain
 │   ├── threshold_sweep.py        # MEL sensitivity-target sweep
-│   └── lesion_overlap_check.py   # Results by lesion overlap with train and validation
+│   ├── lesion_overlap_check.py   # Results by lesion overlap with train and validation
+│   ├── attention_stats.py        # Effect sizes and robustness checks of the attention validation
+│   └── figures/
+│       ├── make_fig1.py          # Figure 1 of the BIOIMAGING paper (EP by class)
+│       └── make_fig2.py          # Figure 2 of the BIOIMAGING paper (one case per class)
 ├── notebooks/
 │   ├── 01_data_exploration.ipynb  ← class distribution, sample images, augmentation demo
-│   └── 02_training_pipeline.ipynb
+│   ├── 02_training_pipeline.ipynb
+│   ├── 03_attention_audit.ipynb   ← Grad-CAM vs expert lesion masks (reference ResNet-50)
+│   ├── 04_attention_backbones.ipynb  ← block-output maps of the three backbones and the ensemble
+│   └── 05_attention_seeds.ipynb   ← ResNet-50 retrained with seeds 7 and 123
+├── experiments/
+│   └── attention_supervision/attention_supervision.ipynb  ← mask-supervised training control
 ├── results/
 │   ├── seed_42/
 │   │   ├── results.json             # Metrics for seed 42 reference run
@@ -545,13 +649,20 @@ skin-lesion-classifier-CNN/
 │   ├── seed_7/results.json          # Metrics for seed 7 robustness run
 │   ├── seed_123/results.json        # Metrics for seed 123 robustness run
 │   ├── lesion_overlap/flags.csv     # Lesion-overlap flags of the seed-42 partition
+│   ├── attention/                   # Per-image audit records and attention_stats.json
+│   ├── attention_backbones/         # Backbone and ensemble maps (notebook 04)
+│   ├── attention_seeds/             # Seeds 7 and 123 (notebook 05)
+│   ├── attention_supervision/       # Supervision control runs
 │   └── robustness_summary.json      # Aggregated 3-seed analysis
 └── docs/
     ├── pipeline.png
     ├── results_confusion_matrix.png
     ├── results_roc_curves.png
     ├── results_gradcam.png
-    └── results_comparison.png
+    ├── results_comparison.png
+    ├── attention_energy.png
+    ├── attention_errors.png
+    └── attention_panel.png
 ```
 
 ---
@@ -560,14 +671,14 @@ skin-lesion-classifier-CNN/
 
 ### The split is by image
 
-HAM10000 holds several images of some lesions, and the split assigns each image to train, validation or test without grouping the images of a lesion. In the partition of the seed-42 reference run, 779 of the 1,991 HAM10000 test images (39%) have another image of the same lesion in train or validation, and 577 of the 2,000 HAM10000 validation images (29%) have one in train. The 357 test images from the official ISIC 2018 validation and test sets carry no lesion identifier and were not checked, and the partitions of seeds 7 and 123 were not checked either. The flags per image are in `results/lesion_overlap/flags.csv`, taken from [skin-lesion-foundation-models](https://github.com/daorre1202/skin-lesion-foundation-models), which uses the same seed-42 partition. `python scripts/lesion_overlap_check.py` recomputes the table from the seed-42 run and writes `results/seed_42/lesion_overlap_summary.json`.
+HAM10000 holds several images of some lesions, and the split assigns each image to train, validation or test without grouping the images of a lesion. In the partition of the seed-42 reference run, 779 of the 1,991 HAM10000 test images (39%) have another image of the same lesion in train or validation, and 577 of the 2,000 HAM10000 validation images (29%) have one in train. The 357 test images from the official ISIC 2018 validation and test sets were not checked for shared lesions, and the partitions of seeds 7 and 123 were not checked either. The flags per image are in `results/lesion_overlap/flags.csv`, taken from [skin-lesion-foundation-models](https://github.com/daorre1202/skin-lesion-foundation-models), which uses the same seed-42 partition. `python scripts/lesion_overlap_check.py` recomputes the table from the seed-42 run and writes `results/seed_42/lesion_overlap_summary.json`.
 
 | Test images | n | BACC, TTA ensemble | BACC with thresholds | Malignant BACC, argmax to thresholds |
 |---|---|---|---|---|
 | All | 2,348 | 0.8486 | 0.8546 | 0.7748 to 0.8015 |
 | No lesion-mate in train or validation | 1,212 | 0.8022 | 0.8043 | 0.7143 to 0.7277 |
 | Lesion-mate in train or validation | 779 | 0.8723 | 0.8770 | 0.8078 to 0.8407 |
-| No lesion identifier | 357 | 0.8736 | 0.8774 | 0.8326 to 0.8596 |
+| Not checked (official ISIC 2018 validation and test images) | 357 | 0.8736 | 0.8774 | 0.8326 to 0.8596 |
 
 On the images without lesion-mate the 95% bootstrap interval of the BACC is 0.742 to 0.859 with argmax and 0.744 to 0.861 with thresholds. The gain of the thresholds on malignant BACC is +0.0267 on all images (+0.0143 to +0.0393) and +0.0134 on the images without lesion-mate (-0.0132 to +0.0389), an interval that includes zero. That group is small (62 MEL, 41 BCC, 35 AKIEC, 9 DF and 11 VASC test images) and differs in composition from the rest, so the comparison is indicative. The other figures of this README refer to the full test set and are unchanged.
 
@@ -638,6 +749,7 @@ medical AI fairness.
 - **Additional data**: incorporating ISIC 2019 images would give AKIEC calibration more validation samples
 - **Lesion-level split**: re-partitioning by lesion rather than by image would remove the overlap noted in [Dataset](#dataset)
 - **Patient metadata**: age, sex, and anatomical location are known discriminative features for dermoscopy classification
+- **Attention dependence**: occlusion or perturbation tests to check whether predictions depend on the region that attention overlaps, and the seed analysis of the attention extended to the full ensemble
 - **Fairness evaluation**: systematic evaluation across skin tones and demographic groups
 - **Prospective validation**: testing on images from different dermatoscope models and clinical settings
 - **Knowledge distillation**: compressing the 3-model ensemble into a single deployable model
@@ -672,6 +784,12 @@ print([int(t(image=img)['image'].sum(axis=2)[0, 0]) for _ in range(8)])
 
 ---
 
+## Development process
+
+The classification pipeline (tag `1.0`) was developed for the undergraduate thesis. The analyses added from `v1.1` onwards (the bootstrap, sweep, lesion-overlap and attention scripts, notebooks 03 to 05, the attention-supervision notebook and the figure scripts) were implemented with the assistance of Claude (Anthropic) from the author's specifications, and Claude was also used for documentation and language editing. The author designed every analysis, ran all experiments, reviewed all code and checked every reported figure against the result files.
+
+---
+
 ## Citation
 
 If you use this code or find it useful, please cite:
@@ -685,6 +803,28 @@ If you use this code or find it useful, please cite:
   year        = {2026},
   note        = {Defended 24 September 2026, grade 10/10. RIUMA institutional repository (link pending);
                  see ERRATA.md for corrections made after deposit.}
+}
+
+@inproceedings{ortiz2027bioimaging,
+  author    = {Ortiz Requena, Daniel and Dom{\'i}nguez Merino, Enrique},
+  title     = {Dataset-Scale Validation of {Grad-CAM} Attention Against Expert Lesion Masks
+               in Dermoscopic Classification},
+  booktitle = {Proceedings of the 20th International Joint Conference on Biomedical Engineering
+               Systems and Technologies (BIOSTEC 2027): BIOIMAGING},
+  publisher = {SCITEPRESS},
+  year      = {2027},
+  note      = {Accepted; to appear. Code and results: tag v1.2}
+}
+
+@inproceedings{ortiz2026caseib,
+  author    = {Ortiz Requena, Daniel},
+  title     = {Clinically Calibrated Per-Class Decision Thresholds for High-Risk Skin Lesion
+               Classification: A Multi-Seed Study on {ISIC} 2018},
+  booktitle = {XLIV Congreso Anual de la Sociedad Espa{\~n}ola de Ingenier{\'i}a Biom{\'e}dica
+               (CASEIB 2026)},
+  address   = {Val{\`e}ncia, Spain},
+  year      = {2026},
+  note      = {Proceedings pending. Code and results: tag v1.1.1}
 }
 
 @software{ortiz2026skinlesion,
@@ -706,10 +846,17 @@ For plain-text citation (e.g. APA):
 
 ## Publications
 
+- Ortiz Requena, D. and Domínguez Merino, E. (2027). *Dataset-Scale Validation of Grad-CAM
+  Attention Against Expert Lesion Masks in Dermoscopic Classification*. 14th International
+  Conference on Bioimaging (BIOIMAGING 2027), part of BIOSTEC 2027, Valletta, Malta.
+  Accepted as a short paper with oral presentation; to appear in the SCITEPRESS proceedings.
+  Code and results cited in the paper:
+  [tag `v1.2`](https://github.com/daorre1202/skin-lesion-classifier-CNN/releases/tag/v1.2).
 - Ortiz Requena, D. (2026). *Clinically Calibrated Per-Class Decision Thresholds for
   High-Risk Skin Lesion Classification: A Multi-Seed Study on ISIC 2018*. XLIV Congreso
   Anual de la Sociedad Española de Ingeniería Biomédica (CASEIB 2026), València.
-  Accepted; DOI pending. Code and results cited in the paper:
+  Presented as an oral communication in November 2026; proceedings pending. Code and results
+  cited in the paper:
   [tag `v1.1.1`](https://github.com/daorre1202/skin-lesion-classifier-CNN/releases/tag/v1.1.1).
 
 ---
@@ -717,6 +864,7 @@ For plain-text citation (e.g. APA):
 ## Acknowledgements
 
 - Dataset: [HAM10000 / ISIC 2018 Challenge Task 3](https://challenge.isic-archive.com/landing/2018/47/), Tschandl et al., 2018
+- Lesion segmentation masks: Tschandl, Sinz and Kittler, 2019 (used for the attention validation; not redistributed here)
 - Pretrained weights: [torchvision models](https://pytorch.org/vision/stable/models.html) (ImageNet-1K)
 - Augmentation library: [Albumentations](https://albumentations.ai/)
 - Tutor: Enrique Domínguez Merino, Universidad de Málaga

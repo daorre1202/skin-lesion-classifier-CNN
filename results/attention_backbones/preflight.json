@@ -1,0 +1,32 @@
+{
+ "checkpoint_resnet50": {
+  "path": "/content/drive/MyDrive/ISIC2018_Task3/colab/resnet50_best.pth",
+  "bytes": 94409443,
+  "sha256": "ae5b2df512ecb277cef9a982029aea2ca5ec7da32e03d84b9c2f8ac3860fa552"
+ },
+ "checkpoint_densenet121": {
+  "path": "/content/drive/MyDrive/ISIC2018_Task3/colab/densenet121_best.pth",
+  "bytes": 28455702,
+  "sha256": "51b88413c04f7d3ce5e168a46b11b454a12fdca9cecaabedbb6c3bd92c33bbce"
+ },
+ "checkpoint_efficientnet_b3": {
+  "path": "/content/drive/MyDrive/ISIC2018_Task3/colab/efficientnet_b3_best.pth",
+  "bytes": 43390839,
+  "sha256": "f5fc2fd21830b863464f2e062acb61b7b5388c592554935b4a8d510700dd1197"
+ },
+ "split_assignment": {
+  "path": "/content/drive/MyDrive/ISIC2018_Task3/colab/split_assignment.json",
+  "bytes": 285968,
+  "sha256": "378b091ca86b477ab2b08c2ed70dece92c721b33fd37331ad00fd1b30e0785bc"
+ },
+ "reference_records": {
+  "path": "/content/drive/MyDrive/ISIC2018_Task3/colab/gradcam_segmentation_overlap.json",
+  "bytes": 493523,
+  "sha256": "90283099fbb7f912edb58f22ae069e073eb46d6d7a8749b327d45bfbe4f6449b"
+ },
+ "repo_commit": "5ae5a0b30aff822ce96a9193a12754105d617077",
+ "masks": {
+  "dir": "/content/drive/MyDrive/ISIC2018_Task3/HAM10000_segmentations_lesion_tschandl",
+  "n_files": 10015
+ }
+}

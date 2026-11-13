@@ -1,0 +1,22 @@
+{
+  "checkpoint": "/content/drive/MyDrive/ISIC2018_Task3/colab/resnet50_best.pth",
+  "test_bacc": 0.8134867711640782,
+  "n_masked": 1991,
+  "ep_global": 0.46194399979703654,
+  "ep_per_class": {
+    "MEL": 0.5977326384911846,
+    "NV": 0.3914601612181812,
+    "BCC": 0.5999821185992629,
+    "AKIEC": 0.7001649344509299,
+    "BKL": 0.5973316786943802,
+    "DF": 0.7345712128139678,
+    "VASC": 0.359305584946504
+  },
+  "ep_malignant": 0.6155642163084478,
+  "ep_benign": 0.42428350894495825,
+  "ep_correct": 0.45122407477646265,
+  "n_correct": 1761,
+  "ep_incorrect": 0.5440213387589092,
+  "n_incorrect": 230,
+  "ep_protocol": "cam_layer4_7x7_softmask_predclass"
+}

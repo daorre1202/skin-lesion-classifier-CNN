@@ -1,0 +1,29 @@
+{
+  "run_name": "crop0_attn1_w0.5_seed42",
+  "val_bacc": 0.7934685467160139,
+  "val_loss": 0.46323024631055576,
+  "best_epoch": 19,
+  "seed": 42,
+  "use_mask_crop": false,
+  "use_attention_loss": true,
+  "attention_loss_weight": 0.5,
+  "crop_margin_frac": 0.2,
+  "img_size": 224,
+  "batch_size": 32,
+  "lr": 0.0001,
+  "weight_decay": 0.0001,
+  "focal_gamma": 1.0,
+  "label_smoothing": 0.1,
+  "max_epochs": 35,
+  "es_patience": 10,
+  "es_min_delta": 0.001,
+  "es_bacc_weight": 0.85,
+  "sched_patience": 4,
+  "sched_factor": 0.5,
+  "aug_thr_light": 2.0,
+  "aug_thr_medium": 6.0,
+  "aug_thr_heavy": 15.0,
+  "clinical_aug_boost": {
+    "MEL": 2
+  }
+}

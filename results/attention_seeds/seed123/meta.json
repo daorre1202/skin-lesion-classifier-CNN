@@ -1,0 +1,9 @@
+{
+ "seed": 123,
+ "split": "/content/drive/MyDrive/ISIC2018_Task3/colab/split_assignment.json",
+ "best_epoch": 32,
+ "val_bacc": 0.7948495137584758,
+ "val_loss": 0.4379122940319201,
+ "test_bacc": 0.7962137391000594,
+ "recipe": "CodigoTFG_DanielOrtiz.py, ResNet-50 settings"
+}
